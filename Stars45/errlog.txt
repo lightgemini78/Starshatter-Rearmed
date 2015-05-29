@@ -1,0 +1,30 @@
++====================================================================+
+| STARSHATTER Rev.9                          7 Mar 2015,  4:07:23 PM |
++====================================================================+
+|                                                                    |
+| Windows 7 6.1 (Build 7601) Service Pack 1                          |
+|                                                                    |
+| Registered Owner: Ernesto,                                         |
+|                                                                    |
+| CPUs Detected: 4    CPU Level: 6.42.7    CPU Speed: 3311           |
+| Intel64 Family 6 Model 42 Stepping 7                               |
+| GenuineIntel                                                       |
+|                                                                    |
+| 4096 MB RAM    4095 MB Max Swap    4095 MB Avail Swap              |
+|                                                                    |
+| DirectX 9 installed.                                               |
+|   DDRAW   6.1.7600.16385 (win7_rtm.090713-1255)                    |
+|   D3DIM   6.1.7600.16385 (win7_rtm.090713-1255)                    |
+|   DINPUT  6.1.7600.16385 (win7_rtm.090713-1255)                    |
+|   DSOUND  6.1.7600.16385 (win7_rtm.090713-1255)                    |
+|   DMUSIC  6.1.7600.16385 (win7_rtm.090713-1255)                    |
+|                                                                    |
+|                                                                    |
+| RDPDD Chained DD                                                   |
+|                                                                    |
++====================================================================+
+
+   WARNING: could not open datafile 'shatter.dat'
+Starshatter cannot open the file 'shatter.dat'.  Please re-install Starshatter.
+
+FATAL ERROR: EXIT.

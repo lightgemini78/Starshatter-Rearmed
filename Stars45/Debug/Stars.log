@@ -1,0 +1,506 @@
+﻿Build started 04/04/2014 22:46:56.
+     1>Project "C:\Matrix Games\Source\Stars45\Stars.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "C:\Matrix Games\Source\Stars45\\Debug\Stars.lastbuildstate".
+       InitializeBuildStatus:
+         Touching "C:\Matrix Games\Source\Stars45\\Debug\Stars.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../FoundationEx /I../nGenEx /I../NetEx /I../Parser /I../Opcode/OpcodeLib /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _VC80_UPGRADE=0x0600 /D _MBCS /D _ATL_STATIC_REGISTRY /Gm /EHsc /RTC1 /MTd /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR"C:\Matrix Games\Source\Stars45\\Debug\\" /Gd /TP /analyze- /errorReport:prompt Asteroid.cpp AudDlg.cpp AudioConfig.cpp Authorization.cpp AwardDlg.cpp AwardShowDlg.cpp Callsign.cpp CameraDirector.cpp ..\nGenEx\CameraView.cpp Campaign.cpp CampaignMissionFighter.cpp CampaignMissionRequest.cpp CampaignMissionStarship.cpp CampaignPlanAssignment.cpp CampaignPlanEvent.cpp CampaignPlanMission.cpp CampaignPlanMovement.cpp CampaignPlanStrategic.cpp CampaignSaveGame.cpp CampaignSituationReport.cpp CarrierAI.cpp CmdDlg.cpp CmdForceDlg.cpp CmdIntelDlg.cpp CmdMissionsDlg.cpp CmdMsgDlg.cpp CmdOrdersDlg.cpp CmdTheaterDlg.cpp CmdTitleDlg.cpp CmpCompleteDlg.cpp CmpFileDlg.cpp CmpLoadDlg.cpp CmpnScreen.cpp CmpSceneDlg.cpp CmpSelectDlg.cpp CombatAction.cpp Combatant.cpp CombatAssignment.cpp CombatEvent.cpp CombatGroup.cpp CombatRoster.cpp CombatUnit.cpp CombatZone.cpp Component.cpp Computer.cpp ConfirmDlg.cpp Contact.cpp CtlDlg.cpp DebriefDlg.cpp Debris.cpp DetailSet.cpp DisplayView.cpp Drive.cpp DriveSprite.cpp Drone.cpp DropShipAI.cpp Element.cpp EngDlg.cpp ExceptionHandler.cpp ExitDlg.cpp Explosion.cpp Farcaster.cpp FighterAI.cpp FighterTacticalAI.cpp FirstTimeDlg.cpp FlightComp.cpp FlightDeck.cpp FlightPlanner.cpp FltDlg.cpp ..\nGenEx\Font.cpp ..\nGenEx\FormDef.cpp Galaxy.cpp GameScreen.cpp Grid.cpp GroundAI.cpp Hangar.cpp HardPoint.cpp Hoop.cpp HUDSounds.cpp HUDView.cpp Instruction.cpp Intel.cpp JoyDlg.cpp KeyDlg.cpp KeyMap.cpp LandingGear.cpp LoadDlg.cpp LoadScreen.cpp Main.cpp MapView.cpp MenuDlg.cpp MenuScreen.cpp MenuView.cpp Mfd.cpp Mission.cpp MissionEvent.cpp MissionTemplate.cpp ModConfig.cpp ModDlg.cpp ModInfo.cpp ModInfoDlg.cpp ..\nGenEx\Mouse.cpp MsnDlg.cpp MsnEditDlg.cpp MsnEditNavDlg.cpp MsnElemDlg.cpp MsnEventDlg.cpp MsnNavDlg.cpp MsnObjDlg.cpp MsnPkgDlg.cpp MsnSelectDlg.cpp MsnWepDlg.cpp MusicDirector.cpp MusicTrack.cpp NavAI.cpp NavDlg.cpp NavLight.cpp NavSystem.cpp NetAddrDlg.cpp NetAdminChat.cpp NetAdminServer.cpp NetAuth.cpp NetBrokerClient.cpp NetChat.cpp NetClientConfig.cpp NetClientDlg.cpp NetData.cpp NetFileServlet.cpp NetGame.cpp NetGameClient.cpp NetGameServer.cpp NetLobby.cpp NetLobbyClient.cpp NetLobbyDlg.cpp NetLobbyServer.cpp NetPacket.cpp NetPassDlg.cpp NetPlayer.cpp NetServerConfig.cpp NetServerDlg.cpp NetUnitDlg.cpp NetUser.cpp NetUtil.cpp NPClientWraps.cpp OptDlg.cpp ..\nGenEx\Particles.cpp PlanScreen.cpp Player.cpp PlayerDlg.cpp Power.cpp QuantumDrive.cpp QuantumFlash.cpp QuantumView.cpp QuitView.cpp RadioHandler.cpp RadioMessage.cpp RadioTraffic.cpp RadioView.cpp RadioVox.cpp RLoc.cpp SeekerAI.cpp Sensor.cpp Shield.cpp ShieldRep.cpp Ship.cpp ShipAI.cpp ShipCtrl.cpp ShipDesign.cpp ShipKiller.cpp ShipSolid.cpp Shot.cpp Sim.cpp SimEvent.cpp SimObject.cpp Sky.cpp StarServer.cpp Starshatter.cpp StarshipAI.cpp StarshipTacticalAI.cpp StarSystem.cpp SteerAI.cpp System.cpp SystemDesign.cpp TacRefDlg.cpp TacticalAI.cpp TacticalView.cpp Terrain.cpp TerrainApron.cpp TerrainClouds.cpp TerrainHaze.cpp TerrainPatch.cpp TerrainRegion.cpp Thruster.cpp TrackIR.cpp Trail.cpp VidDlg.cpp ..\nGenEx\Water.cpp Weapon.cpp WeaponDesign.cpp WeaponGroup.cpp Weather.cpp WepView.cpp
+         WepView.cpp
+         Weather.cpp
+         WeaponGroup.cpp
+         WeaponDesign.cpp
+         Weapon.cpp
+         Water.cpp
+         VidDlg.cpp
+         Trail.cpp
+         TrackIR.cpp
+         Thruster.cpp
+         TerrainRegion.cpp
+         TerrainPatch.cpp
+         TerrainHaze.cpp
+         TerrainClouds.cpp
+         TerrainApron.cpp
+         Terrain.cpp
+         TacticalView.cpp
+         TacticalAI.cpp
+         TacRefDlg.cpp
+         SystemDesign.cpp
+         Generating Code...
+         Compiling...
+         System.cpp
+         SteerAI.cpp
+         StarSystem.cpp
+     1>c:\matrix games\source\stars45\starsystem.cpp(84): warning C4244: '=' : conversion from 'time_t' to 'double', possible loss of data
+         StarshipTacticalAI.cpp
+         StarshipAI.cpp
+         Starshatter.cpp
+     1>c:\matrix games\source\stars45\starshatter.cpp(2397): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>c:\matrix games\source\stars45\starshatter.cpp(2625): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+         StarServer.cpp
+         Sky.cpp
+     1>c:\matrix games\source\stars45\sky.cpp(237): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         SimObject.cpp
+         SimEvent.cpp
+         Sim.cpp
+         Shot.cpp
+         ShipSolid.cpp
+         ShipKiller.cpp
+         ShipDesign.cpp
+     1>c:\matrix games\source\stars45\shipdesign.cpp(665): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         ShipCtrl.cpp
+         ShipAI.cpp
+         Ship.cpp
+         ShieldRep.cpp
+         Shield.cpp
+         Generating Code...
+         Compiling...
+         Sensor.cpp
+         SeekerAI.cpp
+         RLoc.cpp
+         RadioVox.cpp
+         RadioView.cpp
+         RadioTraffic.cpp
+         RadioMessage.cpp
+         RadioHandler.cpp
+         QuitView.cpp
+         QuantumView.cpp
+         QuantumFlash.cpp
+         QuantumDrive.cpp
+         Power.cpp
+         PlayerDlg.cpp
+         Player.cpp
+     1>c:\matrix games\source\stars45\player.cpp(1167): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         PlanScreen.cpp
+         Particles.cpp
+         OptDlg.cpp
+         NPClientWraps.cpp
+         NetUtil.cpp
+         Generating Code...
+         Compiling...
+         NetUser.cpp
+         NetUnitDlg.cpp
+         NetServerDlg.cpp
+         NetServerConfig.cpp
+         NetPlayer.cpp
+         NetPassDlg.cpp
+         NetPacket.cpp
+     1>c:\matrix games\source\stars45\netpacket.cpp(305): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netpacket.cpp(328): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netpacket.cpp(351): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         NetLobbyServer.cpp
+     1>c:\matrix games\source\stars45\netlobbyserver.cpp(1287): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+         NetLobbyDlg.cpp
+         NetLobbyClient.cpp
+         NetLobby.cpp
+         NetGameServer.cpp
+         NetGameClient.cpp
+         NetGame.cpp
+         NetFileServlet.cpp
+         NetData.cpp
+     1>c:\matrix games\source\stars45\netdata.cpp(650): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(921): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(924): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1015): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1018): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1061): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1130): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1131): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1132): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1133): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1283): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1284): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1285): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+     1>c:\matrix games\source\stars45\netdata.cpp(1393): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         NetClientDlg.cpp
+         NetClientConfig.cpp
+         NetChat.cpp
+         NetBrokerClient.cpp
+         Generating Code...
+         Compiling...
+         NetAuth.cpp
+         NetAdminServer.cpp
+         NetAdminChat.cpp
+         NetAddrDlg.cpp
+         NavSystem.cpp
+         NavLight.cpp
+         NavDlg.cpp
+         NavAI.cpp
+         MusicTrack.cpp
+         MusicDirector.cpp
+         MsnWepDlg.cpp
+         MsnSelectDlg.cpp
+         MsnPkgDlg.cpp
+         MsnObjDlg.cpp
+         MsnNavDlg.cpp
+         MsnEventDlg.cpp
+         MsnElemDlg.cpp
+         MsnEditNavDlg.cpp
+         MsnEditDlg.cpp
+         MsnDlg.cpp
+         Generating Code...
+         Compiling...
+         Mouse.cpp
+         ModInfoDlg.cpp
+         ModInfo.cpp
+         ModDlg.cpp
+         ModConfig.cpp
+         MissionTemplate.cpp
+         MissionEvent.cpp
+         Mission.cpp
+         Mfd.cpp
+         MenuView.cpp
+         MenuScreen.cpp
+         MenuDlg.cpp
+         MapView.cpp
+         Main.cpp
+     1>c:\matrix games\source\stars45\main.cpp(63): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+     1>c:\matrix games\source\stars45\main.cpp(65): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(234) : see declaration of 'fopen'
+         LoadScreen.cpp
+         LoadDlg.cpp
+         LandingGear.cpp
+         KeyMap.cpp
+     1>c:\matrix games\source\stars45\keymap.cpp(594): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(325) : see declaration of 'sscanf'
+         KeyDlg.cpp
+         JoyDlg.cpp
+         Generating Code...
+         Compiling...
+         Intel.cpp
+         Instruction.cpp
+         HUDView.cpp
+     1>c:\matrix games\source\stars45\hudview.cpp(4086): warning C4996: 'vsprintf': This function or variable may be unsafe. Consider using vsprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\stdio.h(371) : see declaration of 'vsprintf'
+         HUDSounds.cpp
+         Hoop.cpp
+         HardPoint.cpp
+         Hangar.cpp
+         GroundAI.cpp
+         Grid.cpp
+         GameScreen.cpp
+         Galaxy.cpp
+         FormDef.cpp
+         Font.cpp
+         FltDlg.cpp
+         FlightPlanner.cpp
+         FlightDeck.cpp
+         FlightComp.cpp
+         FirstTimeDlg.cpp
+         FighterTacticalAI.cpp
+         FighterAI.cpp
+         Generating Code...
+         Compiling...
+         Farcaster.cpp
+         Explosion.cpp
+         ExitDlg.cpp
+         ExceptionHandler.cpp
+         EngDlg.cpp
+         Element.cpp
+         DropShipAI.cpp
+         Drone.cpp
+         DriveSprite.cpp
+         Drive.cpp
+         DisplayView.cpp
+         DetailSet.cpp
+         Debris.cpp
+         DebriefDlg.cpp
+         CtlDlg.cpp
+         Contact.cpp
+         ConfirmDlg.cpp
+         Computer.cpp
+         Component.cpp
+         CombatZone.cpp
+         Generating Code...
+         Compiling...
+         CombatUnit.cpp
+         CombatRoster.cpp
+         CombatGroup.cpp
+         CombatEvent.cpp
+         CombatAssignment.cpp
+         Combatant.cpp
+         CombatAction.cpp
+         CmpSelectDlg.cpp
+         CmpSceneDlg.cpp
+         CmpnScreen.cpp
+         CmpLoadDlg.cpp
+         CmpFileDlg.cpp
+         CmpCompleteDlg.cpp
+         CmdTitleDlg.cpp
+         CmdTheaterDlg.cpp
+         CmdOrdersDlg.cpp
+         CmdMsgDlg.cpp
+         CmdMissionsDlg.cpp
+         CmdIntelDlg.cpp
+         CmdForceDlg.cpp
+     1>c:\matrix games\source\stars45\cmdforcedlg.cpp(390): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         Generating Code...
+         Compiling...
+         CmdDlg.cpp
+         CarrierAI.cpp
+         CampaignSituationReport.cpp
+         CampaignSaveGame.cpp
+         CampaignPlanStrategic.cpp
+         CampaignPlanMovement.cpp
+         CampaignPlanMission.cpp
+         CampaignPlanEvent.cpp
+         CampaignPlanAssignment.cpp
+         CampaignMissionStarship.cpp
+         CampaignMissionRequest.cpp
+         CampaignMissionFighter.cpp
+         Campaign.cpp
+     1>c:\matrix games\source\stars45\campaign.cpp(127): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files (x86)\microsoft visual studio 10.0\vc\include\string.h(188) : see declaration of 'strncpy'
+         CameraView.cpp
+         CameraDirector.cpp
+         Callsign.cpp
+         AwardShowDlg.cpp
+         AwardDlg.cpp
+         Authorization.cpp
+         AudioConfig.cpp
+         Generating Code...
+         Compiling...
+         AudDlg.cpp
+         Asteroid.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D _DEBUG /D _VC80_UPGRADE=0x0600 /l"0x0409" /nologo /fo"C:\Matrix Games\Source\Stars45\\Debug\Stars.res" Stars.rc 
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"C:\Matrix Games\Source\Stars45\\Debug\Starshatter_D.exe.embed.manifest.res" "C:\Matrix Games\Source\Stars45\\Debug\Starshatter_D_manifest.rc" 
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Matrix Games\Source\Stars45\Debug\Starshatter_D.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\\lib\x86\\" /LIBPATH:..\oggvorbis\lib ..\Opcode\Debug\Opcode_D.lib ..\ngenex\debug\ngenex.lib ..\netex\debug\netex.lib ..\zlib\debug\zlib.lib ..\libpng\debug\libpng.lib wsock32.lib ..\DirectX\lib\dinput.lib dsound.lib d3d9.lib d3dx9.lib dxguid.lib winmm.lib version.lib ogg_static.lib vorbis_static.lib vorbisfile_static.lib Vfw32.lib /NODEFAULTLIB:libcmt.lib /MANIFEST /ManifestFile:"C:\Matrix Games\Source\Stars45\\Debug\Starshatter_D.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Matrix Games\Source\Stars45\Debug\Starshatter_D.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Matrix Games\Source\Stars45\\Debug\Starshatter_D.lib" /MACHINE:X86 /SAFESEH:NO "C:\Matrix Games\Source\Stars45\\Debug\Stars.res"
+         "C:\Matrix Games\Source\Stars45\\Debug\Starshatter_D.exe.embed.manifest.res"
+         .\Debug\Asteroid.obj
+         .\Debug\AudDlg.obj
+         .\Debug\AudioConfig.obj
+         .\Debug\Authorization.obj
+         .\Debug\AwardDlg.obj
+         .\Debug\AwardShowDlg.obj
+         .\Debug\Callsign.obj
+         .\Debug\CameraDirector.obj
+         .\Debug\CameraView.obj
+         .\Debug\Campaign.obj
+         .\Debug\CampaignMissionFighter.obj
+         .\Debug\CampaignMissionRequest.obj
+         .\Debug\CampaignMissionStarship.obj
+         .\Debug\CampaignPlanAssignment.obj
+         .\Debug\CampaignPlanEvent.obj
+         .\Debug\CampaignPlanMission.obj
+         .\Debug\CampaignPlanMovement.obj
+         .\Debug\CampaignPlanStrategic.obj
+         .\Debug\CampaignSaveGame.obj
+         .\Debug\CampaignSituationReport.obj
+         .\Debug\CarrierAI.obj
+         .\Debug\CmdDlg.obj
+         .\Debug\CmdForceDlg.obj
+         .\Debug\CmdIntelDlg.obj
+         .\Debug\CmdMissionsDlg.obj
+         .\Debug\CmdMsgDlg.obj
+         .\Debug\CmdOrdersDlg.obj
+         .\Debug\CmdTheaterDlg.obj
+         .\Debug\CmdTitleDlg.obj
+         .\Debug\CmpCompleteDlg.obj
+         .\Debug\CmpFileDlg.obj
+         .\Debug\CmpLoadDlg.obj
+         .\Debug\CmpnScreen.obj
+         .\Debug\CmpSceneDlg.obj
+         .\Debug\CmpSelectDlg.obj
+         .\Debug\CombatAction.obj
+         .\Debug\Combatant.obj
+         .\Debug\CombatAssignment.obj
+         .\Debug\CombatEvent.obj
+         .\Debug\CombatGroup.obj
+         .\Debug\CombatRoster.obj
+         .\Debug\CombatUnit.obj
+         .\Debug\CombatZone.obj
+         .\Debug\Component.obj
+         .\Debug\Computer.obj
+         .\Debug\ConfirmDlg.obj
+         .\Debug\Contact.obj
+         .\Debug\CtlDlg.obj
+         .\Debug\DebriefDlg.obj
+         .\Debug\Debris.obj
+         .\Debug\DetailSet.obj
+         .\Debug\DisplayView.obj
+         .\Debug\Drive.obj
+         .\Debug\DriveSprite.obj
+         .\Debug\Drone.obj
+         .\Debug\DropShipAI.obj
+         .\Debug\Element.obj
+         .\Debug\EngDlg.obj
+         .\Debug\ExceptionHandler.obj
+         .\Debug\ExitDlg.obj
+         .\Debug\Explosion.obj
+         .\Debug\Farcaster.obj
+         .\Debug\FighterAI.obj
+         .\Debug\FighterTacticalAI.obj
+         .\Debug\FirstTimeDlg.obj
+         .\Debug\FlightComp.obj
+         .\Debug\FlightDeck.obj
+         .\Debug\FlightPlanner.obj
+         .\Debug\FltDlg.obj
+         .\Debug\Font.obj
+         .\Debug\FormDef.obj
+         .\Debug\Galaxy.obj
+         .\Debug\GameScreen.obj
+         .\Debug\Grid.obj
+         .\Debug\GroundAI.obj
+         .\Debug\Hangar.obj
+         .\Debug\HardPoint.obj
+         .\Debug\Hoop.obj
+         .\Debug\HUDSounds.obj
+         .\Debug\HUDView.obj
+         .\Debug\Instruction.obj
+         .\Debug\Intel.obj
+         .\Debug\JoyDlg.obj
+         .\Debug\KeyDlg.obj
+         .\Debug\KeyMap.obj
+         .\Debug\LandingGear.obj
+         .\Debug\LoadDlg.obj
+         .\Debug\LoadScreen.obj
+         .\Debug\Main.obj
+         .\Debug\MapView.obj
+         .\Debug\MenuDlg.obj
+         .\Debug\MenuScreen.obj
+         .\Debug\MenuView.obj
+         .\Debug\Mfd.obj
+         .\Debug\Mission.obj
+         .\Debug\MissionEvent.obj
+         .\Debug\MissionTemplate.obj
+         .\Debug\ModConfig.obj
+         .\Debug\ModDlg.obj
+         .\Debug\ModInfo.obj
+         .\Debug\ModInfoDlg.obj
+         .\Debug\Mouse.obj
+         .\Debug\MsnDlg.obj
+         .\Debug\MsnEditDlg.obj
+         .\Debug\MsnEditNavDlg.obj
+         .\Debug\MsnElemDlg.obj
+         .\Debug\MsnEventDlg.obj
+         .\Debug\MsnNavDlg.obj
+         .\Debug\MsnObjDlg.obj
+         .\Debug\MsnPkgDlg.obj
+         .\Debug\MsnSelectDlg.obj
+         .\Debug\MsnWepDlg.obj
+         .\Debug\MusicDirector.obj
+         .\Debug\MusicTrack.obj
+         .\Debug\NavAI.obj
+         .\Debug\NavDlg.obj
+         .\Debug\NavLight.obj
+         .\Debug\NavSystem.obj
+         .\Debug\NetAddrDlg.obj
+         .\Debug\NetAdminChat.obj
+         .\Debug\NetAdminServer.obj
+         .\Debug\NetAuth.obj
+         .\Debug\NetBrokerClient.obj
+         .\Debug\NetChat.obj
+         .\Debug\NetClientConfig.obj
+         .\Debug\NetClientDlg.obj
+         .\Debug\NetData.obj
+         .\Debug\NetFileServlet.obj
+         .\Debug\NetGame.obj
+         .\Debug\NetGameClient.obj
+         .\Debug\NetGameServer.obj
+         .\Debug\NetLobby.obj
+         .\Debug\NetLobbyClient.obj
+         .\Debug\NetLobbyDlg.obj
+         .\Debug\NetLobbyServer.obj
+         .\Debug\NetPacket.obj
+         .\Debug\NetPassDlg.obj
+         .\Debug\NetPlayer.obj
+         .\Debug\NetServerConfig.obj
+         .\Debug\NetServerDlg.obj
+         .\Debug\NetUnitDlg.obj
+         .\Debug\NetUser.obj
+         .\Debug\NetUtil.obj
+         .\Debug\NPClientWraps.obj
+         .\Debug\OptDlg.obj
+         .\Debug\Particles.obj
+         .\Debug\PlanScreen.obj
+         .\Debug\Player.obj
+         .\Debug\PlayerDlg.obj
+         .\Debug\Power.obj
+         .\Debug\QuantumDrive.obj
+         .\Debug\QuantumFlash.obj
+         .\Debug\QuantumView.obj
+         .\Debug\QuitView.obj
+         .\Debug\RadioHandler.obj
+         .\Debug\RadioMessage.obj
+         .\Debug\RadioTraffic.obj
+         .\Debug\RadioView.obj
+         .\Debug\RadioVox.obj
+         .\Debug\RLoc.obj
+         .\Debug\SeekerAI.obj
+         .\Debug\Sensor.obj
+         .\Debug\Shield.obj
+         .\Debug\ShieldRep.obj
+         .\Debug\Ship.obj
+         .\Debug\ShipAI.obj
+         .\Debug\ShipCtrl.obj
+         .\Debug\ShipDesign.obj
+         .\Debug\ShipKiller.obj
+         .\Debug\ShipSolid.obj
+         .\Debug\Shot.obj
+         .\Debug\Sim.obj
+         .\Debug\SimEvent.obj
+         .\Debug\SimObject.obj
+         .\Debug\Sky.obj
+         .\Debug\StarServer.obj
+         .\Debug\Starshatter.obj
+         .\Debug\StarshipAI.obj
+         .\Debug\StarshipTacticalAI.obj
+         .\Debug\StarSystem.obj
+         .\Debug\SteerAI.obj
+         .\Debug\System.obj
+         .\Debug\SystemDesign.obj
+         .\Debug\TacRefDlg.obj
+         .\Debug\TacticalAI.obj
+         .\Debug\TacticalView.obj
+         .\Debug\Terrain.obj
+         .\Debug\TerrainApron.obj
+         .\Debug\TerrainClouds.obj
+         .\Debug\TerrainHaze.obj
+         .\Debug\TerrainPatch.obj
+         .\Debug\TerrainRegion.obj
+         .\Debug\Thruster.obj
+         .\Debug\TrackIR.obj
+         .\Debug\Trail.obj
+         .\Debug\VidDlg.obj
+         .\Debug\Water.obj
+         .\Debug\Weapon.obj
+         .\Debug\WeaponDesign.obj
+         .\Debug\WeaponGroup.obj
+         .\Debug\Weather.obj
+         .\Debug\WepView.obj /FORCE:MULTIPLE 
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/FORCE' specification
+     1>LINK : fatal error LNK1123: failure during conversion to COFF: file invalid or corrupt
+     1>Done Building Project "C:\Matrix Games\Source\Stars45\Stars.vcxproj" (rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:02:20.62
