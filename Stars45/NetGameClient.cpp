@@ -533,7 +533,7 @@ NetGameClient::DoObjKill(NetMsg* msg)
 		}
 		else {
 			ship->InflictNetDamage(ship->Integrity());
-			ship->DeathSpiral();
+			ship->DeathSpiral(false);
 
 			if (!obj_kill.GetRespawn())
 			ship->SetRespawnCount(0);

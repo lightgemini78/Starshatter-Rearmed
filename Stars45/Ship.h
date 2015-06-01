@@ -62,6 +62,10 @@ class Thruster;
 class Weapon;
 class WeaponDesign;
 class WeaponGroup;
+class Pilot;
+class PilotRep;
+class CanopyRep;
+class Model;
 
 // +--------------------------------------------------------------------+
 
@@ -95,7 +99,7 @@ public:
 		DEFSAT            = 0x00040000,
 		SWACS             = 0x00080000,
 
-		BUILDING          = 0x00100000,
+		BUILDING          = 0x00100000,  
 		FACTORY           = 0x00200000,
 		SAM               = 0x00400000,
 		EWR               = 0x00800000,
@@ -164,6 +168,8 @@ public:
 
 	bool              IsInvulnerable()           const { return invulnerable;      }
 	void              SetInvulnerable(bool n)          { invulnerable = n;         }
+	bool			  IsTargeteable()		     const { return targeteable;	   }		//**Targeteable flag
+	void			  SetTargeteable(bool t)		   { targeteable = t;		   }
 
 	double            GetHelmHeading()     const { return helm_heading;  }
 	double            GetHelmPitch()       const { return helm_pitch;    }
@@ -218,7 +224,7 @@ public:
 	bool              IsInCombat();
 	void              TimeSkip();
 	void              DropCam(double time=10, double range=0);
-	void              DeathSpiral();
+	void              DeathSpiral(bool instakill);
 	void              CompleteTransition();
 	void              SetTransition(double trans_time, int trans_type, const Point& trans_loc);
 
@@ -430,6 +436,9 @@ public:
 	void                    EnableRepair(bool e)  { auto_repair = e;       }
 	bool                    MasterCaution() const { return master_caution; }
 	void                    ClearCaution()       { master_caution = 0; }
+	void					EjectPilot();									//**Pilot Ejection request
+	bool					IsCold()			 { return cold;		   }
+	void					SetCold(bool c)		 { cold = c;		   }	//** cold ship. Dead derelict.
 
 	// SYSTEM ACCESSORS:
 	List<System>&           Systems()            { return systems;       }
@@ -447,6 +456,11 @@ public:
 	Thruster*               GetThruster()        { return thruster;      }
 	Hangar*                 GetHangar()          { return hangar;        }
 	LandingGear*            GetGear()            { return gear;          }
+	Pilot*					GetPilot()			 { return pilot;		 }			//** Pilot accessors
+	Solid*					GetPilotRep()		 { return (Solid*) pilotRep;}
+	Model*					GetPilotRep2()		 { return pilotRep2;}
+	Solid*					GetCanopyRep()		 { return (Solid*) canopyRep;}
+	Model*					GetCanopyDeadRep()	 { return canopydeadRep; }
 
 	System*                 GetSystem(int sys_id);
 
@@ -506,6 +520,12 @@ protected:
 	Weapon*           probe;
 	Drone*            sensor_drone;
 	Hangar*           hangar;
+	Pilot*			  pilot;			//** Pilot class 
+	PilotRep*		  pilotRep;
+	Model*			  pilotRep2;
+	CanopyRep*		  canopyRep;
+	Model*			  canopydeadRep;
+
 	List<Shot>        decoy_list;
 	List<Shot>        threat_list;
 
@@ -538,6 +558,8 @@ protected:
 	BYTE              emcon;
 	BYTE              old_emcon;
 	bool              invulnerable;
+	bool			  targeteable;	//** can be targeted
+	bool			  cold;
 
 	DWORD             launch_time;
 	DWORD             friendly_fire_time;

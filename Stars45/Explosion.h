@@ -48,7 +48,8 @@ public:
 		LARGE_BURST       = 12,
 		NUKE_EXPLOSION    = 13,
 		QUANTUM_FLASH     = 14,
-		HYPER_FLASH       = 15
+		HYPER_FLASH       = 15,
+		FIRE_TRAIL		  = 25		//** fire and smoke animation
 	};
 
 	Explosion(int type, const Vec3& pos, const Vec3& vel, 

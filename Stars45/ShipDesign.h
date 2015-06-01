@@ -42,6 +42,7 @@ class FlightDeck;
 class LandingGear;
 class System;
 class Sound;
+class Pilot;
 
 // +====================================================================+
 
@@ -164,6 +165,7 @@ public:
 	void  ParseSquadron(TermStruct* val);
 	Skin* ParseSkin(TermStruct* val);
 	void  ParseSkinMtl(TermStruct* val, Skin* skin);
+	void  ParsePilot(TermStruct* val);
 
 	// general information:
 	const char*       DisplayName() const;
@@ -263,6 +265,11 @@ public:
 	Weapon*           decoy;
 	Weapon*           probe;
 	LandingGear*      gear;
+	Pilot*			  pilot;			//** pilot
+	Model*			  pilot_model;
+	Model*			  pilot_model2;
+	Model*			  pilot_canopy;
+	Model*			  pilot_canopy_dead;
 
 	float             splash_radius;
 	float             scuttle;

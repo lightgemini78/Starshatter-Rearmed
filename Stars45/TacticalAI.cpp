@@ -30,6 +30,7 @@
 #include "Shot.h"
 #include "Drone.h"
 #include "StarSystem.h"
+#include "Pilot.h"
 
 #include "Game.h"
 #include "Random.h"
@@ -567,10 +568,15 @@ TacticalAI::CanTarget(Ship* tgt)
 	bool result = false;
 
 	if (tgt && !tgt->InTransition()) {
-		if (tgt->IsRogue() || tgt->GetIFF() != ship->GetIFF())
-		result = true;
-	}
 
+		if (tgt->GetPilot() && tgt->IsCold() || !tgt->IsTargeteable()) 		//**dont target poor pilots
+			return result;
+	
+		if (tgt->IsRogue() || tgt->GetIFF() != ship->GetIFF())
+			result = true;
+		
+	}
+	
 	return result;
 }
 
@@ -764,7 +770,7 @@ TacticalAI::CheckTarget()
 		}
 
 		// is the target already jumping/breaking/dying?
-		if (target->InTransition()) {
+		if (target->InTransition() || target->GetPilot() && target->IsCold()) {		//* drop disabled ships too
 			ship_ai->DropTarget();
 			return;
 		}

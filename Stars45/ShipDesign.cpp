@@ -33,6 +33,7 @@
 #include "Computer.h"
 #include "SystemDesign.h"
 #include "Component.h"
+#include "Pilot.h"
 
 #include "Game.h"
 #include "Solid.h"
@@ -146,7 +147,7 @@ static void PrepareModel(Model& model)
 
 ShipDesign::ShipDesign()
 : sensor(0), navsys(0), shield(0), type(0), decoy(0),
-probe(0), gear(0), valid(false), secret(false), auto_roll(1), cockpit_model(0),
+probe(0), gear(0), pilot(0), valid(false), secret(false), auto_roll(1), cockpit_model(0),
 bolt_hit_sound_resource(0), beam_hit_sound_resource(0), lod_levels(0)
 {
 	ZeroMemory(filename,       sizeof(filename));
@@ -163,8 +164,8 @@ bolt_hit_sound_resource(0), beam_hit_sound_resource(0), lod_levels(0)
 
 ShipDesign::ShipDesign(const char* n, const char* p, const char* fname, bool s)
 : sensor(0), navsys(0), shield(0), type(0),
-quantum_drive(0), farcaster(0), thruster(0), shield_model(0), decoy(0),
-probe(0), gear(0), valid(false), secret(s), auto_roll(1), cockpit_model(0),
+quantum_drive(0), farcaster(0), thruster(0), shield_model(0), pilot_model(0), pilot_canopy(0), decoy(0),
+probe(0), gear(0), pilot(0), valid(false), secret(s), auto_roll(1), cockpit_model(0),
 bolt_hit_sound_resource(0), beam_hit_sound_resource(0), lod_levels(0)
 {
 	ZeroMemory(filename,       sizeof(filename));
@@ -224,6 +225,9 @@ bolt_hit_sound_resource(0), beam_hit_sound_resource(0), lod_levels(0)
 	wep_screen     = true;
 	escape_jump    = false;   //Jump away turned off default.
 	escape_hull    = 0.0f;
+	pilot		   = 0;
+	pilot_model2   = 0;
+	pilot_canopy_dead = 0;
 
 	chase_vec      = Vec3(0, -100, 20);
 	bridge_vec     = Vec3(0,    0,  0);
@@ -437,6 +441,9 @@ ShipDesign::~ShipDesign()
 	delete decoy;
 	delete probe;
 	delete gear;
+	delete pilot;		//**delete pilot
+	delete pilot_model;
+	delete pilot_canopy;
 
 	navlights.destroy();
 	flight_decks.destroy();
@@ -1319,6 +1326,16 @@ ShipDesign::ParseShip(TermDef* def)
 		else {
 			TermStruct* val = def->term()->isStruct();
 			ParseDrive(val);
+		}
+	}
+
+		else if (defname == "pilot") {											//**  pilot system 
+		if (!def->term() || !def->term()->isStruct()) {
+			Print("WARNING: pilot struct missing in '%s'\n", filename);
+		}
+		else {
+			TermStruct* val = def->term()->isStruct();
+			ParsePilot(val);
 		}
 	}
 
@@ -3704,4 +3721,126 @@ ShipDesign::FindSkin(const char* skin_name) const
 	}
 
 	return 0;
+}
+
+void
+ShipDesign::ParsePilot(TermStruct* val)					//** Parse pilot
+{
+	Text  design_name;
+	Text  model_name;
+	Text  model_name2;
+	Text  canopy_name;
+	Text  canopy_dead_name;
+	Vec3  loc(0.0f, 0.0f, 0.0f);
+	float size   = 0.0f;
+	float hull   = 0.5f;
+	int	  etype = 0;
+
+	for (int i = 0; i < val->elements()->size(); i++) {
+		TermDef* pdef = val->elements()->at(i)->isDef();
+		if (pdef) {
+			Text defname = pdef->name()->value();
+			defname.setSensitive(false);
+
+			if (defname == "model") {
+			GetDefText(model_name, pdef, filename);
+			}
+			else if (defname == "model2") {
+			GetDefText(model_name2, pdef, filename);
+			}
+			else if (defname == "canopy") {
+			GetDefText(canopy_name, pdef, filename);
+			}
+			else if (defname == "canopy_dead") {
+			GetDefText (canopy_dead_name, pdef, filename);
+			}
+			else if (defname == "loc") {
+				GetDefVec(loc, pdef, filename);
+				loc *= (float) scale;
+			}
+			else if (defname == "size") {
+				size *= (float) scale;
+				GetDefNumber(size, pdef, filename);
+			}
+			else if (defname == "hull_factor") {
+				GetDefNumber(hull, pdef, filename);
+			}
+			else if (defname == "explosion") {
+			GetDefNumber(etype, pdef, filename);
+			}
+			else if (defname == "design")
+			GetDefText(design_name, pdef, filename);
+		}
+	}
+
+	if (!pilot) {
+		pilot = new(__FILE__,__LINE__) Pilot;
+
+		if (design_name.length()) {
+			SystemDesign* sd = SystemDesign::Find(design_name);
+			if (sd)
+			pilot->SetDesign(sd);
+		}
+
+		pilot->Mount(loc, size, hull);
+		pilot->SetSourceIndex(reactors.size()-1);
+		pilot->SetExplosionType(etype);
+
+		if (model_name.length()) {
+			pilot_model = new(__FILE__,__LINE__) Model;
+			if (!pilot_model->Load(model_name, scale)) {
+				Print("ERROR: Could not load pilot model '%s'\n", model_name.data());
+				delete pilot_model;
+				pilot_model = 0;
+				valid = false;
+			}		
+				else {
+					pilot_model->SetDynamic(false);
+				}
+		}
+
+		if (model_name2.length()) {
+			pilot_model2 = new(__FILE__,__LINE__) Model;
+			if (!pilot_model2->Load(model_name2, scale)) {
+				Print("ERROR: Could not load  second pilot model '%s'\n", model_name2.data());
+				delete pilot_model2;
+				pilot_model2 = 0;
+				valid = false;
+			}		
+				else {
+					pilot_model2->SetDynamic(false);
+				}
+		}
+
+
+		if (canopy_name.length()) {
+			pilot_canopy = new(__FILE__,__LINE__) Model;
+			if (!pilot_canopy->Load(canopy_name, scale)) {
+				Print("ERROR: Could not load canopy model '%s'\n", canopy_name.data());
+				delete pilot_canopy;
+				pilot_canopy = 0;
+				valid = false;
+			}		
+				else {
+					pilot_canopy->SetDynamic(true);
+				}
+		}
+
+		if (canopy_dead_name.length()) {
+			pilot_canopy_dead = new(__FILE__,__LINE__) Model;
+			if (!pilot_canopy_dead->Load(canopy_dead_name, scale)) {
+				Print("ERROR: Could not load killed canopy model '%s'\n", canopy_dead_name.data());
+				delete pilot_canopy_dead;
+				pilot_canopy_dead = 0;
+				valid = false;
+			}		
+				else {
+					pilot_canopy_dead->SetDynamic(true);
+				}
+		}
+	}
+
+	else {
+		Print("WARNING: additional pilot system ignored in '%s'\n", filename);
+	}
 }

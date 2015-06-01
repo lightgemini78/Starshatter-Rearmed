@@ -27,6 +27,7 @@
 #include "Drive.h"
 #include "Sim.h"
 #include "StarSystem.h"
+#include "Pilot.h"
 
 #include "Game.h"
 
@@ -239,15 +240,19 @@ FighterTacticalAI::SelectTargetOpportunity()
 		Shot*    c_shot  = contact->GetShot();
 		int      c_iff   = contact->GetIFF(ship);
 		bool     rogue   = false;
+		bool	 alive	 = true;
 
-		if (c_ship)
-		rogue = c_ship->IsRogue();
+		if (c_ship) {
+			rogue = c_ship->IsRogue();
+			if(c_ship->GetPilot() && !c_ship->GetPilot()->Alive())		//** check pilot dead
+				alive = false;
+		}
 
 		if (!rogue && (c_iff <= 0 || c_iff == ship->GetIFF() || c_iff == 1000))
 		continue;
 
 		// reasonable target?
-		if (c_ship && c_ship->Class() <= class_limit && !c_ship->InTransition()) {
+		if (c_ship && c_ship->Class() <= class_limit && !c_ship->InTransition() && alive) {
 			if (!rogue) {
 				SimObject* ttgt = c_ship->GetTarget();
 

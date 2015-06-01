@@ -1796,7 +1796,7 @@ Starshatter::DoGameKeys()
 			hud_view->CycleHUDInst();
 		}
 
-		else if (KeyDown(KEY_SELF_DESTRUCT)) {
+		else if (KeyDown(KEY_SELF_DESTRUCT)) {					//** New uses for suicide key.
 			time_til_change = 0.5;
 			
 			if (player_ship && !player_ship->InTransition()) {
@@ -1805,8 +1805,13 @@ Starshatter::DoGameKeys()
 				if (NetGame::IsNetGameClient()) {
 					NetUtil::SendSelfDestruct(player_ship, damage);
 				}
+				
+				else if(player_ship->GetPilot()) {
+					player_ship->EjectPilot();	//** first use, eject from ship.
+				}
+
 				else {
-					Point scuttle_loc = player_ship->Location() + RandomDirection() * player_ship->Radius();
+					Point scuttle_loc = player_ship->Location() + RandomDirection() * player_ship->Radius();	//** suicide
 					player_ship->InflictDamage(damage, 0, 1, scuttle_loc);
 				}
 
@@ -1817,8 +1822,8 @@ Starshatter::DoGameKeys()
 					if (s)
 					s->AddEvent(SimEvent::DESTROYED, player_ship->Name());
 
-					player_ship->DeathSpiral();
-				}
+					player_ship->DeathSpiral(true);
+				} 
 			}
 		}
 	}

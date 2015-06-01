@@ -18,6 +18,7 @@
 #include "Types.h"
 #include "Geometry.h"
 #include "Text.h"
+#include "Camera.h"
 
 // +--------------------------------------------------------------------+
 
@@ -34,12 +35,14 @@ public:
 	ShipKiller(Ship* ship);
 	virtual ~ShipKiller();
 
-	virtual void      BeginDeathSpiral();
+	virtual void      BeginDeathSpiral(bool instakill);
 	virtual void      ExecFrame(double seconds);
 
 	// GENERAL ACCESSORS:
 	virtual float     TransitionTime() const { return time; }
 	virtual Point     TransitionLoc()  const { return loc;  }
+
+	virtual Camera*   GetCamera()            { return &camera; }
 
 protected:
 	Ship*             ship;
@@ -49,6 +52,7 @@ protected:
 
 	float             exp_time;
 	int               exp_index;
+	Camera			  camera;
 };
 
 #endif ShipKiller_h

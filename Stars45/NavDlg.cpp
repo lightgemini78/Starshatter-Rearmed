@@ -28,6 +28,12 @@
 #include "Campaign.h"
 #include "Contact.h"
 #include "Mission.h"
+#include "Pilot.h"
+#include "List.h"
+#include "Power.h"
+#include "Drive.h"
+#include "Shield.h"
+#include "Sensor.h"
 
 #include "Game.h"
 #include "Keyboard.h"
@@ -762,10 +768,68 @@ NavDlg::UpdateSelection()
 			char shield[16];
 			char hull[16];
 			char range[32];
+			char fuel[16];
+			char pilot[32];
+			char hp[16];
+			char reac[16];
+			char drive[16];
+			char sh[16];
+			char sensor[16];
 
+			
 			sprintf_s(shield, "%03d", sel_ship->ShieldStrength());
 			sprintf_s(hull,   "%03d", sel_ship->HullStrength());
-			sprintf_s(range,  "%s",  Game::GetText("NavDlg.not-avail").data());
+			sprintf_s(range,  "%s",  Game::GetText("NavDlg.not-avail").data());				//**Add more info about selected ship
+
+			sprintf_s(fuel, "%03d", sel_ship->GetFuelLevel());
+
+			if(sel_ship->Reactors().size() > 0) {
+				int stat = 100;
+				ListIter<PowerSource> iter = sel_ship->Reactors();		//** Reactor update
+				while (++iter) {
+					PowerSource* r = iter.value();
+					if(r->Availability() < stat)
+						stat = r->Availability();					
+				}
+				sprintf_s(reac, "%03d", stat);				
+			}
+			else sprintf_s(reac, "%s", "None");
+
+		//*********************
+			if(sel_ship->Drives().size() > 0) {
+				int stat = 100;
+				ListIter<Drive> iter = sel_ship->Drives();			//** Drive update
+				while (++iter) {
+					Drive* r = iter.value();
+					if(r->Availability() < stat)
+						stat = r->Availability();					
+				}
+				sprintf_s(drive, "%03d", stat);				
+			}
+			else sprintf_s(drive, "%s", "None");
+
+		//*************************
+			if(sel_ship->GetShield()) 
+				sprintf_s(sh, "%03d", (int) sel_ship->GetShield()->Availability());		//**Shield update	
+			else sprintf_s(sh, "%s", "None");
+
+			if (sel_ship->GetSensor())
+				sprintf_s(sensor, "%03d", (int) sel_ship->GetSensor()->Availability());	//**Sensor update
+			else sprintf_s(sensor, "%s", "None");
+
+		//********************************
+			if (sel_ship->GetPilot()) {
+				sprintf_s(pilot, "%s" "%s", sel_ship->GetPilot()->GetName(), sel_ship->GetPilot()->GetSurname());
+
+				double aval = sel_ship->GetPilot()->Availability();
+				if(sel_ship->GetPilot()->Ejected())
+					sprintf_s(hp, "%s", "Ejected");
+				else if (aval >= 100) 
+					sprintf_s(hp, "%s", "Good");
+				else if(aval < 60)
+					sprintf_s(hp, "%s", "Dead");
+				else sprintf_s(hp, "%s", "Wounded");			
+			}
 
 			if (ship) {
 				FormatNumberExp(range, Point(sel_ship->Location()-ship->Location()).length()/1000);
@@ -775,19 +839,46 @@ NavDlg::UpdateSelection()
 			info_list->AddItem(Game::GetText("NavDlg.name"));
 			info_list->AddItem(Game::GetText("NavDlg.class"));
 			info_list->AddItem(Game::GetText("NavDlg.sector"));
+			//**Extra info labels		
+			if(sel_ship->GetPilot()) {
+			info_list->AddItem("Pilot:");
+			info_list->AddItem("Status:");
+			}
 			info_list->AddItem(Game::GetText("NavDlg.shield"));
 			info_list->AddItem(Game::GetText("NavDlg.hull"));
 			info_list->AddItem(Game::GetText("NavDlg.range"));
+			info_list->AddItem("Fuel:");
 			info_list->AddItem(Game::GetText("NavDlg.orders"));
+
+
+			info_list->AddItem(" ");
+			info_list->AddItem("Reactor:");
+			info_list->AddItem("Drive:");
+			info_list->AddItem("Shield:");
+			info_list->AddItem("Sensor:");
 
 			int row = 0;
 			info_list->SetItemText(row++, 1, sel_ship->Name());
 			info_list->SetItemText(row++, 1, Text(sel_ship->Abbreviation()) + Text(" ") + Text(sel_ship->Design()->display_name));
 			info_list->SetItemText(row++, 1, sel_ship->GetRegion()->Name());
+
+			//**Extra info data
+			if(sel_ship->GetPilot()) {
+				info_list->SetItemText(row++, 1, pilot);
+				info_list->SetItemText(row++, 1, hp);
+			}
 			info_list->SetItemText(row++, 1, shield);
 			info_list->SetItemText(row++, 1, hull);
 			info_list->SetItemText(row++, 1, range);
+			info_list->SetItemText(row++, 1, fuel);
 			info_list->SetItemText(row++, 1, order_desc);
+
+
+			info_list->SetItemText(row++, 1, " ");
+			info_list->SetItemText(row++, 1, reac);
+			info_list->SetItemText(row++, 1, drive);
+			info_list->SetItemText(row++, 1, sh);
+			info_list->SetItemText(row++, 1, sensor);
 		}
 
 		else if (sel_elem) {

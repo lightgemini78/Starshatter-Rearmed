@@ -32,6 +32,8 @@
 #include "QuantumDrive.h"
 #include "Power.h"
 #include "Instruction.h"
+#include "Pilot.h"
+#include "Player.h"
 
 #include "NetGame.h"
 
@@ -1081,6 +1083,7 @@ MFD::DrawGameMFD()
 	if (lines < 10) lines++;
 
 	char txt[64];
+	char pilot[32];
 	Rect txt_rect(rect.x, rect.y, rect.w, 12);
 
 	int t = 0;
@@ -1131,6 +1134,17 @@ MFD::DrawGameMFD()
 	txt_rect.y += 10;
 
 	if (lines <= 4) return;
+
+	if (ship->GetPilot()) {
+		//Player* guy = Player::GetCurrentPlayer();		//** optional display player name
+		//sprintf_s(pilot, "%s" , guy->Name());
+
+		if(ship->GetPilot()->Ejected())
+			sprintf_s(pilot, "%s", "Bailed out");
+		else {sprintf_s(pilot, "%s" "%s" ,  ship->GetPilot()->GetName(), ship->GetPilot()->GetSurname());}		//**pilot name
+		DrawMFDText(t++, pilot, txt_rect, DT_LEFT);		
+		txt_rect.y += 10;
+	}
 
 	if (ship) {
 		switch (ship->GetFlightPhase()) {

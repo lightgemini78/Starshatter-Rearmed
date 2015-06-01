@@ -57,6 +57,7 @@
 #include "GameScreen.h"
 #include "Terrain.h"
 #include "TerrainPatch.h"
+#include "Pilot.h"
 
 #include "NetGame.h"
 #include "NetClientConfig.h"
@@ -1819,7 +1820,7 @@ Sim::ResolveSplashList()
 						if (killee)
 						killee->AddEvent(SimEvent::DESTROYED, splash->owner_name);
 
-						ship->DeathSpiral();
+						ship->DeathSpiral(false);
 					}
 				}
 			}
@@ -2700,6 +2701,8 @@ SimRegion::DamageShips()
 
 	Point impact;
 
+	bool overkill;
+
 	// FOR EACH SHOT IN THE REGION:
 	ListIter<Shot> shot_iter = shots;
 	while (++shot_iter) {
@@ -2716,7 +2719,7 @@ SimRegion::DamageShips()
 		ListIter<Ship> ship_iter = ships;
 		while (shot && ++ship_iter) {
 			Ship* ship = ship_iter.value();
-			int   hit  = ship->HitBy(shot, impact);
+			int   hit  = ship->HitBy(shot, impact);			//**HitBy applies damage to ships. Hit Nothing returns 0.
 
 			if (hit) {
 				// recon imager:
@@ -2729,10 +2732,13 @@ SimRegion::DamageShips()
 
 				// live round:
 				else if (shot->Damage() > 0) {
-					int ship_destroyed = (!ship->InTransition() && ship->Integrity() < 1.0f);
+
+					int ship_destroyed = (!ship->InTransition() && ship->Integrity() < 1.0f || ship->GetPilot() && !ship->GetPilot()->CheckAlive()); //**Pilot Sys enters
 
 					// then delete the ship:
 					if (ship_destroyed) {
+						overkill = shot->Damage() > ((double) ship->Design()->integrity) / 3;	//** condition for insta kill
+
 						NetUtil::SendObjKill(ship, owner, shot->IsMissile() ? NetObjKill::KILL_SECONDARY : NetObjKill::KILL_PRIMARY);
                         Director* director;
                         
@@ -2757,7 +2763,7 @@ SimRegion::DamageShips()
 						}
 
 						if (owner && owner->GetIFF() != ship->GetIFF()) {
-							if (ship->GetIFF() > 0 || owner->GetIFF() > 1) {
+							if (ship->GetIFF() > 0 || owner->GetIFF() > 1 || !ship->GetPilot()->CheckAlive()) {		//**Pilot kill gets points too
 								killer->AddPoints(ship->Value());
 
 								Element* elem = owner->GetElement();
@@ -2789,10 +2795,16 @@ SimRegion::DamageShips()
 						}
 
 						ShipStats* killee = ShipStats::Find(ship->Name());
-						if (killee)
-						killee->AddEvent(SimEvent::DESTROYED, owner_name);
-
-						ship->DeathSpiral();
+						if (killee) {							
+							 if(ship->Integrity() < 1.0f) {
+								killee->AddEvent(SimEvent::DESTROYED, owner_name);
+								ship->DeathSpiral(overkill);
+							}
+							else if(!ship->GetPilot()->CheckAlive()) {
+								killee->AddEvent(SimEvent::PILOT_KILLED, owner_name);		//**new case for pilot dead. Call to Pilot() for disabling the ship
+		
+							}
+						}													
 					}
 				}
 
@@ -3105,7 +3117,7 @@ SimRegion::CollideShips()
 	ListIter<Ship> killed(kill_list);
 	while (++killed) {
 		Ship* kill = killed.value();
-		kill->DeathSpiral();
+		kill->DeathSpiral(false);
 	}
 }
 
@@ -3126,14 +3138,22 @@ SimRegion::CrashShips()
 				ship->Class() != Ship::LCA &&
 				ship->AltitudeAGL() < ship->Radius()/2) {
 			if (ship->GetFlightPhase() == Ship::ACTIVE || ship->GetFlightPhase() == Ship::APPROACH) {
-				ship->InflictDamage(1e6);
+				double dam;
+				Point  vel = ship->Velocity();
+				double v   = vel.Normalize();
+				if(v > 100) {
+					dam = (0.5 * (ship->Mass()) * (pow(v, 2)/100))/10;		//**Placeholder formula for eating ground. Would love to apply semielastic collisions here for more IL2 feeling.
+					ship->InflictDamage(dam);
+				}
 
 				if (ship->Integrity() < 1.0f) {
 					Print("    ship destroyed by crash: %s (%s)\n", ship->Name(), FormatGameTime());
-					ShipStats* r = ShipStats::Find(ship->Name());
-					if (r) r->AddEvent(SimEvent::CRASH);
+					if(ship->GetPilot() && !ship->GetPilot()->Ejected()) {
+						ShipStats* r = ShipStats::Find(ship->Name());
+						if (r) r->AddEvent(SimEvent::CRASH);
+					}
 
-					ship->DeathSpiral();
+					ship->DeathSpiral(true);
 				}
 			}
 		}
@@ -3149,11 +3169,15 @@ SimRegion::CrashShips()
 		if (shot->AltitudeMSL() < 5e3 &&
 				shot->AltitudeAGL() < 5) {
 
+			sim->CreateExplosion(shot->Location(), Point(0,0,0), Explosion::HULL_BURST, 0.4f, 0.4f, this); //** Create FX on ground hits
+
 			// shot hit the ground, destroy it:
 			NetUtil::SendWepDestroy(shot);
 
 			if (shot->IsDrone())
 			drones.remove((Drone*) shot);
+
+
 
 			shot_iter.removeItem();
 			delete shot;

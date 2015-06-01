@@ -333,6 +333,10 @@ VidDlg::Apply()
 		w = 1600;
 		h = 1200;
 	}
+	else if (strstr(mode_desc, "1680 x 1050")) {		//**own res
+		w = 1680;
+		h = 1050;
+	}
 
 	if (strstr(mode_desc, "x 16"))
 	d = 16;
@@ -498,6 +502,9 @@ VidDlg::BuildModeList()
 			strcpy_s(mode_desc, "1600 x 900 x ");
 			else
 			strcpy_s(mode_desc, "1600 x 1200 x ");
+			break;
+		case 1680:
+			strcpy_s(mode_desc, "1680 x 1050 x ");	//** own res
 			break;
 		}
 

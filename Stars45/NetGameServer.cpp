@@ -992,7 +992,7 @@ NetGameServer::DoSelfDestruct(NetMsg* msg)
 			if (killee)
 			killee->AddEvent(SimEvent::DESTROYED, ship->Name());
 
-			ship->DeathSpiral();
+			ship->DeathSpiral(true);
 		}
 	}
 }

@@ -48,7 +48,7 @@ inline int random_index()
 // +----------------------------------------------------------------------+
 
 void
-ShipKiller::BeginDeathSpiral()
+ShipKiller::BeginDeathSpiral(bool instakill)
 {
 	if (!ship) return;
 
@@ -66,8 +66,8 @@ ShipKiller::BeginDeathSpiral()
 				if (beam)
 				beam->Destroy();
 			}
-		}
-	}
+		  }
+	   }
 
 	if (ship->GetShieldRep())
 	ship->GetShieldRep()->Hide();
@@ -75,8 +75,15 @@ ShipKiller::BeginDeathSpiral()
 	Sim*              sim    = Sim::GetSim();
 	const ShipDesign* design = ship->Design();
 
-	float  time_to_go = design->death_spiral_time;
+	float  time_to_go;
+
+	if (instakill)
+		time_to_go = 0;
+
+	else time_to_go = design->death_spiral_time;
+
 	time = DEATH_CAM_LINGER + time_to_go;
+
 	loc  = ship->Location() + ship->Velocity() * (time_to_go-1.0f);
 
 	if (rand() < 16000)
@@ -126,6 +133,7 @@ ShipKiller::BeginDeathSpiral()
 
 	ship->SetControls(0);
 	ship->SetupAgility();
+	
 }
 
 // +----------------------------------------------------------------------+
@@ -163,6 +171,7 @@ ShipKiller::ExecFrame(double seconds)
 	}
 
 	if (time < DEATH_CAM_LINGER) {
+
 		for (int i = 0; i < ShipDesign::MAX_EXPLOSIONS; i++) {
 			if (design->explosion[i].final) {
 				Point exp_loc = ship->Location() + (design->explosion[i].loc * ship->Cam().Orientation());

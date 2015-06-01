@@ -33,6 +33,7 @@
 #include "StarSystem.h"
 #include "RadioMessage.h"
 #include "RadioTraffic.h"
+#include "Pilot.h"
 
 #include "Game.h"
 
@@ -68,7 +69,7 @@ static double frame_time = 0;
 void
 FighterAI::ExecFrame(double s)
 {
-	if (!ship) return;
+	if (!ship || ship->IsCold()) return;		//** Pilot alive check
 
 	evading = false;
 	inbound = ship->GetInbound();

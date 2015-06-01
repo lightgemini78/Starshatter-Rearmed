@@ -23,6 +23,7 @@
 #include "Campaign.h"
 #include "Starshatter.h"
 #include "GameScreen.h"
+#include "Pilot.h"
 
 #include "CameraView.h"
 #include "Color.h"
@@ -241,7 +242,7 @@ QuitView::CanAccept()
 		int      ciff  = c->GetIFF(player_ship);
 
 /*		if (c->Threat(player_ship)) {
-			RadioView::Message(Game::GetText("QuitView.threats-present"));		//** Disable horrible quit mission blocker
+			RadioView::Message(Game::GetText("QuitView.threats-present"));		//** Disable horrible quit mission condition
 			RadioView::Message(Game::GetText("QuitView.abort"));
 			return false;
 		}	*/
@@ -250,17 +251,21 @@ QuitView::CanAccept()
 			Point  delta = c->Location() - player_ship->Location();
 			double dist  = delta.length();
 
-			if (cship->IsDropship() && dist < 50e3) {
-				RadioView::Message(Game::GetText("QuitView.threats-present"));
-				RadioView::Message(Game::GetText("QuitView.abort"));
-				return false;
+			//** Killed or ejected pilot allow quick mission quit
+			if(player_ship->GetPilot() && player_ship->IsCold()) {
+				return true;
 			}
-
-			else if (cship->IsStarship() && dist < 100e3) {
-				RadioView::Message(Game::GetText("QuitView.threats-present"));
-				RadioView::Message(Game::GetText("QuitView.abort"));
-				return false;
-			}
+				if (cship->IsDropship() && dist < 50e3) {
+					RadioView::Message(Game::GetText("QuitView.threats-present"));
+					RadioView::Message(Game::GetText("QuitView.abort"));
+					return false;
+				}
+				else if (cship->IsStarship() && dist < 100e3) {
+					RadioView::Message(Game::GetText("QuitView.threats-present"));
+					RadioView::Message(Game::GetText("QuitView.abort"));
+					return false;
+				}
+			
 		}
 	}
 

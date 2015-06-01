@@ -718,7 +718,7 @@ CameraDirector::ExecFrame(double seconds)
 		SetMode(MODE_COCKPIT);
 	}
 
-	if (ship->InTransition()) {
+	if (ship->InTransition()) {	
 		SetMode(MODE_DROP);
 	}
 	// automatically restore mode after transition:

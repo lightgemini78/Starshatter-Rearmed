@@ -34,6 +34,7 @@
 #include "Starshatter.h"
 #include "GameScreen.h"
 #include "MenuView.h"
+#include "Pilot.h"
 
 #include "Projector.h"
 #include "Color.h"
@@ -338,6 +339,7 @@ TacticalView::DrawSelectionInfo(Ship* seln)
 	static char orders[64];
 	static char psv[32];
 	static char act[32];
+	static char pilot[32];
 
 	int   show_labels = width > 640;
 	int   full_info   = true;
@@ -411,6 +413,10 @@ TacticalView::DrawSelectionInfo(Ship* seln)
 			label_rect.y += 10;
 			font->DrawText(Game::GetText("TacView.heading"),  4, label_rect, DT_LEFT);
 			label_rect.y += 10;
+			if(seln->GetPilot()){
+			font->DrawTextA("Pilot:", 6, label_rect, DT_LEFT);							//** pilot label
+			label_rect.y += 10;
+			}
 		}
 		else {
 			font->DrawText(Game::GetText("TacView.passive"),  4, label_rect, DT_LEFT);
@@ -455,6 +461,16 @@ TacticalView::DrawSelectionInfo(Ship* seln)
 		font->DrawText(heading, 0, info_rect, DT_LEFT);
 		info_rect.y += 10;
 
+						//** Display pilot name.
+		if (seln->GetPilot()) {
+			if(seln->GetPilot()->Ejected())
+				sprintf_s(pilot, "%s", "None");
+			else { sprintf_s(pilot, "%s" "%s" ,  seln->GetPilot()->GetName(), seln->GetPilot()->GetSurname()); }
+			font->DrawText(pilot, 0, info_rect, DT_LEFT);
+		}
+			info_rect.y += 10;
+				
+	
 		if (seln->GetIFF() == ship->GetIFF()) {
 			Instruction* instr = seln->GetRadioOrders();
 			if (instr && instr->Action()) {
@@ -493,7 +509,8 @@ TacticalView::DrawSelectionInfo(Ship* seln)
 		info_rect.y += 10;
 	}
 
-	/*** XXX DEBUG
+
+
 font->DrawText(seln->GetDirectorInfo(), 0, info_rect, DT_LEFT);
 info_rect.y += 10;
 /***/

@@ -397,7 +397,7 @@ MissionEvent::Execute(bool silent)
 
 			if (ship->Integrity() < 1) {
 				NetUtil::SendObjKill(ship, 0, NetObjKill::KILL_MISC);
-				ship->DeathSpiral();
+				ship->DeathSpiral(false);
 				Print("    %s Killed By Scripted Event %d (%s)\n", (const char*) ship->Name(), id, FormatGameTime());
 			}
 		}

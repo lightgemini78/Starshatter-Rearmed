@@ -75,7 +75,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
     <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release VS2012|Win32'" Label="Configuration">
@@ -799,6 +799,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\nGenEx\PilotRep.cpp" />
     <ClCompile Include="Asteroid.cpp" />
     <ClCompile Include="AudDlg.cpp" />
     <ClCompile Include="AudioConfig.cpp" />
@@ -826,6 +827,7 @@
     <ClCompile Include="CampaignPlanStrategic.cpp" />
     <ClCompile Include="CampaignSaveGame.cpp" />
     <ClCompile Include="CampaignSituationReport.cpp" />
+    <ClCompile Include="CanopyRep.cpp" />
     <ClCompile Include="CarrierAI.cpp" />
     <ClCompile Include="CmdDlg.cpp" />
     <ClCompile Include="CmdForceDlg.cpp" />
@@ -952,6 +954,7 @@
     <ClCompile Include="NPClientWraps.cpp" />
     <ClCompile Include="OptDlg.cpp" />
     <ClCompile Include="..\nGenEx\Particles.cpp" />
+    <ClCompile Include="Pilot.cpp" />
     <ClCompile Include="PlanScreen.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerDlg.cpp" />
@@ -1020,6 +1023,7 @@
     <ResourceCompile Include="Stars.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\nGenEx\PilotRep.h" />
     <ClInclude Include="Asteroid.h" />
     <ClInclude Include="AudDlg.h" />
     <ClInclude Include="AudioConfig.h" />
@@ -1040,6 +1044,7 @@
     <ClInclude Include="CampaignPlanMovement.h" />
     <ClInclude Include="CampaignPlanStrategic.h" />
     <ClInclude Include="CampaignSituationReport.h" />
+    <ClInclude Include="CanopyRep.h" />
     <ClInclude Include="CmdDlg.h" />
     <ClInclude Include="CmdForceDlg.h" />
     <ClInclude Include="CmdIntelDlg.h" />
@@ -1145,6 +1150,7 @@
     <ClInclude Include="NetUtil.h" />
     <ClInclude Include="NPClientWraps.h" />
     <ClInclude Include="OptDlg.h" />
+    <ClInclude Include="Pilot.h" />
     <ClInclude Include="PlanScreen.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerDlg.h" />

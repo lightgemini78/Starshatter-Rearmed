@@ -65,6 +65,9 @@
 #include "HUDView.h"
 #include "Random.h"
 #include "RadioVox.h"
+#include "Pilot.h"
+#include "PilotRep.h"
+#include "CanopyRep.h"
 
 #include "NetGame.h"
 #include "NetUtil.h"
@@ -111,8 +114,8 @@ Ship::Ship(const char* ship_name, const char* reg_num, ShipDesign* ship_dsn, int
 shield(0), shieldRep(0), main_drive(0), quantum_drive(0), farcaster(0),
 check_fire(false), probe(0), sensor_drone(0), primary(0), secondary(1),
 cmd_chain_index(0), target(0), subtarget(0), radio_orders(0), launch_point(0),
-g_force(0.0f), sensor(0), navsys(0), flcs(0), hangar(0), respawns(0), invulnerable(false),
-thruster(0), decoy(0), ai_mode(2), command_ai_level(cmd_ai), flcs_mode(FLCS_AUTO), loadout(0),
+g_force(0.0f), sensor(0), navsys(0), pilot(0), pilotRep(0), canopyRep(0), flcs(0), hangar(0), respawns(0), invulnerable(false), targeteable(true),
+thruster(0), decoy(0), ai_mode(2), command_ai_level(cmd_ai), flcs_mode(FLCS_AUTO), loadout(0), cold(false),
 emcon(3), old_emcon(3), master_caution(false), cockpit(0), gear(0), skin(0),
 auto_repair(true), last_repair_time(0), last_eval_time(0), last_beam_time(0), last_bolt_time(0),
 warp_fov(1), flight_phase(LAUNCH), launch_time(0), carrier(0), dock(0), ff_count(0),
@@ -187,6 +190,33 @@ friendly_fire_time(0), ward(0), net_observer_mode(false), orig_elem_index(-1)
 		systems.append(drive);
 	}
 
+		if (design->pilot) {									//**Pilot system, based on shield system code
+		pilot = new(__FILE__,__LINE__) Pilot(*design->pilot);
+		pilot->SetShip(this);
+		pilot->SetID(sys_id++);
+
+		int src_index = pilot->GetSourceIndex();
+		if (src_index >= 0 && src_index < reactors.size())
+		reactors[src_index]->AddClient(pilot);
+
+		if (design->pilot_model) {
+			pilotRep = new(__FILE__,__LINE__) PilotRep;
+			pilotRep->UseModel(design->pilot_model);
+		}
+		if (design->pilot_model2) {
+			pilotRep2 = design->pilot_model2;
+		}
+		if (design->pilot_canopy) {
+			canopyRep = new(__FILE__,__LINE__) CanopyRep;
+			canopyRep->UseModel(design->pilot_canopy);
+		}
+		if (design->pilot_canopy_dead) {
+			canopydeadRep = design->pilot_canopy_dead;
+		}
+
+		systems.append(pilot);
+	}
+
 	if (design->quantum_drive) {
 		quantum_drive = new(__FILE__,__LINE__) QuantumDrive(*design->quantum_drive);
 		quantum_drive->SetShip(this);
@@ -196,7 +226,7 @@ friendly_fire_time(0), ward(0), net_observer_mode(false), orig_elem_index(-1)
 		if (src_index >= 0 && src_index < reactors.size())
 		reactors[src_index]->AddClient(quantum_drive);
 
-		quantum_drive->SetShip(this);
+		//quantum_drive->SetShip(this);							//** double assignment? mistake?
 		systems.append(quantum_drive);
 	}
 
@@ -563,13 +593,13 @@ Ship::Destroy()
 			Ship* s = deck->GetShip(i);
 
 			if (s && !s->IsDying() && !s->IsDead()) {
-				if (sim && sim->IsActive()) {
-					s->DeathSpiral();
-				}
-				else {
+				//if (sim && sim->IsActive()) {
+				//	s->DeathSpiral();
+				//}
+				//else {
 					s->transition_type = TRANSITION_DEAD;
 					s->Destroy();
-				}
+				//}
 			}
 		}
 	}
@@ -609,6 +639,8 @@ Ship::Destroy()
 	probe = 0;
 	delete gear;
 	gear = 0;
+	delete pilot;
+	pilot = 0;
 
 	main_drive  = 0;
 	flcs        = 0;
@@ -635,6 +667,8 @@ Ship::Destroy()
 
 	GRAPHIC_DESTROY(cockpit);
 	GRAPHIC_DESTROY(shieldRep);
+	GRAPHIC_DESTROY(pilotRep);
+	GRAPHIC_DESTROY(canopyRep);
 	LIGHT_DESTROY(light);
 
 	delete launch_point;
@@ -686,7 +720,7 @@ Ship::SetupAgility()
 	dp_drg = design->pitch_drag;
 	dy_drg = design->yaw_drag;
 
-	if (IsDying()) {
+	if (IsDying() || pilot && !GetPilot()->Alive()) {		//**include Pilot killed and breaking up
 		drag   =  0.0f;
 		dr_drg *= 0.25f;
 		dp_drg *= 0.25f;
@@ -792,7 +826,9 @@ Ship::SetRegion(SimRegion* rgn)
 		double m0 = primary->Mass();
 		double r  = primary->Radius();
 
-		SetGravity((float) (GRAV * m0 / (r*r)));
+		double test = (GRAV * m0 / (r*r)) * 4;		//** 4 times moar G's to stop floaty behaviour
+
+		SetGravity((float) (test));
 		SetBaseDensity(1.0f);
 	}
 
@@ -852,6 +888,13 @@ Ship::Activate(Scene& scene)
 
 	if (shieldRep)
 	scene.AddGraphic(shieldRep);
+
+	if(pilotRep)
+		scene.AddGraphic(pilotRep);
+
+	if(canopyRep)
+		scene.AddGraphic(canopyRep);
+
 
 	if (cockpit) {
 		scene.AddForeground(cockpit);
@@ -942,6 +985,12 @@ Ship::Deactivate(Scene& scene)
 
 	if (shieldRep)
 	scene.DelGraphic(shieldRep);
+
+	if(pilotRep)
+	scene.DelGraphic(shieldRep);
+
+	if(canopyRep)
+	scene.DelGraphic(canopyRep);
 
 	if (cockpit)
 	scene.DelForeground(cockpit);
@@ -1490,7 +1539,7 @@ Ship::HitBy(Shot* shot, Point& impact)
 	if (shot->IsFlak())
 	return HIT_NOTHING;
 
-	if (InTransition())
+	if (InTransition() || pilot && !GetPilot()->Alive())		//** pilot dead invulnerable
 	return HIT_NOTHING;
 
 	Point    shot_loc = shot->Location();
@@ -2121,6 +2170,9 @@ Ship::SetAutoNav(bool engage)
 void
 Ship::CommandMode()
 {
+	if (pilot && !GetPilot()->Alive())
+		return;
+
 	if (!dir || dir->Type() != ShipCtrl::DIR_TYPE) {
 		const char* msg = "Captain on the bridge";
 		RadioVox*   vox = new(__FILE__,__LINE__) RadioVox(0, "1", msg);
@@ -2398,6 +2450,11 @@ Ship::ExecFrame(double seconds)
 		}
 	}
 
+	if(GetPilot() && !GetPilot()->Ejected() && HullStrength() < 10) {		//** maybe cool to place eject here??
+			GetPilot()->Eject();
+			return;
+		}	
+
 	// observers do not run out of power:
 	if (IsNetObserver()) {
 		for (int i = 0; i < reactors.size(); i++)
@@ -2409,9 +2466,16 @@ Ship::ExecFrame(double seconds)
 		return;
 	}
 
+	bool manned = false;
+	if(pilot && !IsCold()) {
+		manned = true;
+	}
+
+	if(!pilot || manned) {				//** pilot alive check
 	CheckFriendlyFire();
 	ExecNavFrame(seconds);
 	ExecEvalFrame(seconds);
+	}
 
 	if (IsAirborne()) {
 		// are we trying to make orbit?
@@ -2419,9 +2483,11 @@ Ship::ExecFrame(double seconds)
 		MakeOrbit();
 	}
 
-	if (!InTransition()) {
+	if (!pilot || manned )  {		//**piot alive check
+		if(!InTransition())  {
 		ExecSensors(seconds);
 		ExecThrottle(seconds);
+		}
 	}
 
 	else if (IsDropping() || IsAttaining() || IsSkipping()) {
@@ -2660,7 +2726,7 @@ Ship::ExecPhysics(double seconds)
 			}
 		}
 
-		else if (IsDying() || flight_model < 2) { // standard and relaxed modes
+		else if (IsDying() || flight_model < 2) { // standard and relaxed mode
 			Physical::ExecFrame(seconds);
 		}
 
@@ -2808,6 +2874,18 @@ Ship::ExecSystems(double seconds)
 		}
 	}
 
+	if(pilotRep) {
+		Solid*	solid = (Solid*) rep;
+		pilotRep->MoveTo(GetPilot()->MountLocation());
+		pilotRep->SetOrientation(solid->Orientation());
+	}
+
+	if(canopyRep) {
+		Solid*	solid = (Solid*) rep;
+		canopyRep->MoveTo(solid->Location());
+		canopyRep->SetOrientation(solid->Orientation());
+	}
+
 	if (cockpit) {
 		Solid* solid = (Solid*) rep;
 
@@ -2828,10 +2906,11 @@ Ship::AeroFrame(double seconds)
 {
 	float g_save = g_accel;
 
-	if (Class() == LCA) {
+/*	if (Class() == LCA) {
 		lat_thrust = true;
 		SetGravity(0.0f);
-	}
+	}	*/
+
 
 	if (AltitudeAGL() < Radius()) {
 		SetGravity(0.0f);
@@ -3137,6 +3216,19 @@ Ship::StatFrame(double seconds)
 		}
 	}
 
+	if(pilotRep) {
+		Solid*	solid = (Solid*) rep;
+		pilotRep->MoveTo(GetPilot()->MountLocation());
+		pilotRep->SetOrientation(solid->Orientation());
+	}
+
+	if(canopyRep) {
+		Solid*	solid = (Solid*) rep;
+		canopyRep->MoveTo(solid->Location());
+		canopyRep->SetOrientation(solid->Orientation());
+	}
+
+
 	if (!_finite(Location().x)) {
 		DropTarget();
 	}
@@ -3245,6 +3337,19 @@ Ship::SelectDetail(double seconds)
 							scene->AddGraphic(g);
 						}
 					}
+				}
+
+				if(pilotRep) {								//**Detail on/off for pilot and canopy models.
+					if(detail_level == 0)
+						scene->DelGraphic(GetPilotRep());
+					else
+						scene->AddGraphic(GetPilotRep());
+				}
+				if(canopyRep) {
+					if(detail_level == 0)
+						scene->DelGraphic(GetCanopyRep());
+					else
+						scene->AddGraphic(GetCanopyRep());
 				}
 
 				ListIter<WeaponGroup> g = weapons;
@@ -3650,7 +3755,7 @@ Ship::DropCam(double time, double range)
 // +--------------------------------------------------------------------+
 
 void
-Ship::DeathSpiral()
+Ship::DeathSpiral(bool instakill)
 {
 	if (!killer)
 	killer = new(__FILE__,__LINE__) ShipKiller(this);
@@ -3665,12 +3770,13 @@ Ship::DeathSpiral()
 	}
 
 	if (GetIFF() < 100 && !IsGroundUnit()) {
+		if(!IsCold())
 		RadioTraffic::SendQuickMessage(this, RadioMessage::DISTRESS);
 	}
 
 	transition_type = TRANSITION_DEATH_SPIRAL;
 
-	killer->BeginDeathSpiral();
+	killer->BeginDeathSpiral(instakill);
 
 	transition_time = killer->TransitionTime();
 	transition_loc  = killer->TransitionLoc();
@@ -4601,7 +4707,7 @@ Ship::InflictDamage(double damage, Shot* shot, int hit_type, Point impact)
 				float scale = (float) design->scale;
 
 				if (IsDropship())
-				sim->CreateExplosion(impact, Velocity(), Explosion::SMOKE_TRAIL, 0.01f * scale, 0.5f * scale, region, this);
+				sim->CreateExplosion(impact, Velocity(), Explosion::FIRE_TRAIL, 0.01f * scale, scale, region, this); //smoke trail
 				else
 				sim->CreateExplosion(impact, Velocity(), Explosion::HULL_FIRE,   0.10f * scale,        scale, region, this);
 			}
@@ -5325,3 +5431,13 @@ Ship::AIValue() const
 
 	return value;
 }
+
+void
+Ship::EjectPilot()
+{
+	if (!pilot || GetPilot()->Ejected())
+		return;
+	
+	GetPilot()->Eject();
+}
+

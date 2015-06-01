@@ -462,7 +462,7 @@ CarrierAI::Deployment()
 		max = squadron;
 	}
 
-	Element* squad1 = CreatePackage(squadron, 6, Mission::SWEEP, 0, "ACM Medium Range");
+	Element* squad1 = CreatePackage(squadron, 6, Mission::DEFEND, 0, "ACM Medium Range");
 
 
 	if(squad1 && flight_planner) {
@@ -517,7 +517,7 @@ CarrierAI::CarrierCommand()
 		}
 
 		if(CheckHostileElements(elem)) {
-			if(elem->GetShip(1)->GetHangar() && !g1.active || !g2.active) {
+			if(elem->GetShip(1)->GetHangar() && !g1.active ) {
 				Deployment();
 			}
 			CreateStrike(elem);
@@ -545,13 +545,13 @@ CarrierAI::Balance()
 			if(unit->Class() > Ship::FREIGHTER)
 			redbig += unit->AIValue();
 
-			red +=	unit->AIValue();
+			else red +=	unit->AIValue();
 		}
 		else if(unit && unit->GetIFF() == ship->GetIFF()) {
 			    if(unit->Class() > Ship::FREIGHTER)
 				bluebig += unit->AIValue();
 
-				blue +=	unit->AIValue();
+				else blue += unit->AIValue();
 		}
 	}
 	superior_small = (blue > red) ? true : false;
