@@ -3142,7 +3142,7 @@ SimRegion::CrashShips()
 				Point  vel = ship->Velocity();
 				double v   = vel.Normalize();
 				if(v > 100) {
-					dam = (0.5 * (ship->Mass()) * (pow(v, 2)/100))/10;		//**Placeholder formula for eating ground. Would love to apply semielastic collisions here for more IL2 feeling.
+					dam = (0.5 * (ship->Mass()) * (pow(v, 2)/100))/20;		//**Placeholder formula for eating ground. Would love to apply semielastic collisions here for more IL2 feeling.
 					ship->InflictDamage(dam);
 				}
 

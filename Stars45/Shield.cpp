@@ -182,9 +182,10 @@ Shield::DeflectDamage(Shot* shot, double damage)
 	if (shot) {
 	penetration = shot->Design()->penetration;
 	Sdamage		= shot->Design()->shield_dmg;
+	}
 	if (Sdamage == 0) 
 		Sdamage = damage;
-	}
+	
 
 	filter = 1 - shield_factor * penetration;
 

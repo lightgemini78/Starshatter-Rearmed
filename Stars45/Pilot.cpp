@@ -165,7 +165,6 @@ Pilot::Disabled()			//** leave the ship a dead derelict when pilot is dead or ba
 			iter->SetPowerLevel(0);
 		}
 	}
-//	ship->SetFlightModel(2);
 	ship->SetupAgility();
 	Point torque = RandomVector(ship->Mass()/7);
 	ship->ApplyTorque(torque);
@@ -192,13 +191,16 @@ Pilot::Disabled()			//** leave the ship a dead derelict when pilot is dead or ba
 void
 Pilot::Eject()
 {
+	if(ejected)
+		return;
+
 	Sim* sim = Sim::GetSim();
 
 	char named[32];
 	char reg[64];
 
 	sprintf_s(named, "%s" "%s", name, surname);
-	strcpy(reg, ship->Registry());
+	strcpy_s(reg, ship->Registry());
 
 	Text region;
 	if (ship->GetRegion())
@@ -212,27 +214,28 @@ Pilot::Eject()
 	
 	ShipDesign* design;
 	Ship* eject = sim->CreateShip(named, reg, design->Get("Ejected"), region, Point (0,0,0), 0);
-	eject->MoveTo(loc);
-	eject->SetVelocity(ship->Velocity() + bail);
-	eject->CloneCam(s);
-	eject->SetTargeteable(false);
+	if(eject) {
+		eject->MoveTo(loc);
+		eject->SetVelocity(ship->Velocity() + bail);
+		eject->CloneCam(s);
+		eject->SetTargeteable(false);
 
-	Ship* hero_ship = sim->GetPlayerShip();
-	if(ship == hero_ship) {
-		eject->SetIFF(ship->GetIFF());
-		ship->GetRegion()->SetPlayerShip(eject);
-	}
+		Ship* hero_ship = sim->GetPlayerShip();
+		if(ship == hero_ship) {
+			eject->SetIFF(ship->GetIFF());
+			ship->GetRegion()->SetPlayerShip(eject);
+		}
 
-	ejected = true;
-	Disabled();
+		ejected = true;
+		Disabled();
 	
-	if (ship->GetCanopyRep()) {
-		ship->GetCanopyRep()->Hide();
+	
+		if (ship->GetCanopyRep()) {
+			ship->GetCanopyRep()->Hide();
+		}
+
+		if (ship->GetPilotRep()) {
+			ship->GetPilotRep()->Hide();
+		}
 	}
-
-	if (ship->GetPilotRep()) {
-		ship->GetPilotRep()->Hide();
-	}
-
-
 }
