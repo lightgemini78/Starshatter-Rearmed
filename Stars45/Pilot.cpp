@@ -228,8 +228,13 @@ Pilot::Eject()
 
 		ejected = true;
 		Disabled();
+
 	
-	
+		if(gender != 1) {
+			Solid* s = (Solid*) eject->Rep();
+			s->UseModel(ship->GetPilotRep2());
+		}
+
 		if (ship->GetCanopyRep()) {
 			ship->GetCanopyRep()->Hide();
 		}

@@ -68,6 +68,7 @@
 #include "Pilot.h"
 #include "PilotRep.h"
 #include "CanopyRep.h"
+#include "SimObject.h"
 
 #include "NetGame.h"
 #include "NetUtil.h"
@@ -1992,8 +1993,18 @@ bool IsWeaponBlockedFriendly(Weapon* w, const SimObject* test)
 
 		Point  dst = dir * r + wep;
 		double err = (obj - dst).length();
+		double rad;
 
-		if (err < test->Radius() * 1.5)
+		if(test->Type() == SimObject::SIM_SHIP) {
+		Ship* s	  = (Ship*) test;
+		if(s->GetShieldRep())
+			 rad = s->GetShieldRep()->Radius();
+		else rad = test->Radius();
+		}
+
+		else rad = test->Radius();
+
+		if (err < rad * 1.5)
 		return true;
 	}
 
@@ -2717,6 +2728,8 @@ Ship::ExecPhysics(double seconds)
 
 		if (IsAirborne()) {
 			Point v1 = velocity;
+			double l  =v1.length();
+			double n  =v1.Normalize();
 			AeroFrame(seconds);
 			Point v2 = velocity;
 			Point dv = v2 - v1 + Point(0, g_accel*seconds, 0);
@@ -2913,7 +2926,7 @@ Ship::AeroFrame(double seconds)
 
 
 	if (AltitudeAGL() < Radius()) {
-		SetGravity(0.0f);
+		//SetGravity(0.0f);
 
 		// on the ground/runway?
 		double bottom = 1e9;

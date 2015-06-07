@@ -3138,13 +3138,18 @@ SimRegion::CrashShips()
 				ship->Class() != Ship::LCA &&
 				ship->AltitudeAGL() < ship->Radius()/2) {
 			if (ship->GetFlightPhase() == Ship::ACTIVE || ship->GetFlightPhase() == Ship::APPROACH) {
-				double dam;
+				double dam = 0;
 				Point  vel = ship->Velocity();
-				double v   = vel.Normalize();
-				if(v > 100) {
-					dam = (0.5 * (ship->Mass()) * (pow(v, 2)/100))/20;		//**Placeholder formula for eating ground. Would love to apply semielastic collisions here for more IL2 feeling.
-					ship->InflictDamage(dam);
+				double v   = vel.length();
+				if(ship->IsGearDown()) {
+					if(vel.y < -60) {
+						dam = 0.5 * (ship->Mass()) * (pow(fabs(vel.y), 2)/100) * (v * 0.005);	//** impact formula taking vertical vel as main factor																				
+						}																		//** and speed as secondary factor
 				}
+					else dam = 0.5 * (ship->Mass()) * (pow(fabs(vel.y), 2)/100) * (v * 0.005);
+				
+				ship->InflictDamage(dam, 0, 1);
+				Physical::SemiElasticCollision_single(*ship);
 
 				if (ship->Integrity() < 1.0f) {
 					Print("    ship destroyed by crash: %s (%s)\n", ship->Name(), FormatGameTime());
