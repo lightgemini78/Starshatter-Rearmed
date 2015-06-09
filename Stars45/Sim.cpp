@@ -2979,13 +2979,29 @@ SimRegion::CollideShips()
 			continue;
 
 			// don't collide with own runway!
-			if (ship->IsAirborne() && ship->GetCarrier() == targ)
+/*			if (ship->IsAirborne() && ship->GetCarrier() == targ)
 			continue;
 			if (targ->IsAirborne() && targ->GetCarrier() == ship)
-			continue;
+			continue;	*/
+
+			if (ship->CollidesWith(*targ) && targ->Class() == Ship::STARBASE || ship->Class() == Ship::STARBASE) {
+				double dam = 0;
+				Point  vel = ship->Velocity();
+				double v   = vel.length();
+				if(ship->IsGearDown()) {
+					if(vel.y < -20) {
+						dam = 0.5 * (ship->Mass()) * (pow(fabs(vel.y), 2)/100) * (v * 0.005);	//** impact formula taking vertical vel as main factor																				
+						}																		//** and speed as secondary factor
+				}
+				else dam = 0.5 * (ship->Mass()) * (pow(fabs(vel.y), 2)/100) * (v * 0.005);
+					
+				
+				ship->InflictDamage(dam, 0, 1);
+				Physical::SemiElasticCollision_single(*ship);
+			}
 
 			// impact:
-			if (ship->CollidesWith(*targ)) {
+			else if (ship->CollidesWith(*targ)) {
 				Vec3 tv1 = targ->Velocity();
 				Vec3 sv1 = ship->Velocity();
 
@@ -3135,14 +3151,14 @@ SimRegion::CrashShips()
 
 		if (!ship->IsGroundUnit() && 
 				!ship->InTransition() && 
-				ship->Class() != Ship::LCA &&
+				//ship->Class() != Ship::LCA &&
 				ship->AltitudeAGL() < ship->Radius()/2) {
 			if (ship->GetFlightPhase() == Ship::ACTIVE || ship->GetFlightPhase() == Ship::APPROACH) {
 				double dam = 0;
 				Point  vel = ship->Velocity();
 				double v   = vel.length();
 				if(ship->IsGearDown()) {
-					if(vel.y < -60) {
+					if(vel.y < -20) {
 						dam = 0.5 * (ship->Mass()) * (pow(fabs(vel.y), 2)/100) * (v * 0.005);	//** impact formula taking vertical vel as main factor																				
 						}																		//** and speed as secondary factor
 				}

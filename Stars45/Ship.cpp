@@ -786,8 +786,11 @@ Ship::SetupAgility()
 		if (agility < 0.5 * design->agility)
 		agility = 0.5 * design->agility;
 
-		if (flight_model == 0)
-		drag = 0.0f;
+		if (flight_model == 0) {
+			if(IsCold())					//** disabled ships do slow down to a halt. 
+				drag = 0.005f;
+			else drag = 0.0f;
+		}
 	}
 
 	float rr = (float) (design->roll_rate  * PI / 180);
@@ -2919,10 +2922,10 @@ Ship::AeroFrame(double seconds)
 {
 	float g_save = g_accel;
 
-/*	if (Class() == LCA) {
+	if (Class() == LCA || GetDensity() <= 0.0f) {
 		lat_thrust = true;
-		SetGravity(0.0f);
-	}	*/
+		//SetGravity(0.0f);
+	}	
 
 
 	if (AltitudeAGL() < Radius()) {
@@ -2974,7 +2977,7 @@ Ship::AeroFrame(double seconds)
 		}
 
 		else {
-			if (v < 250) {
+			if (v < 250 && AltitudeAGL() > Radius()) {
 				double factor = 1.2 + (250 - v) / 100;
 
 				ApplyPitch(pitch_deflection * -factor);
@@ -2985,7 +2988,7 @@ Ship::AeroFrame(double seconds)
 			}
 
 			else {
-				if (fabs(pitch_deflection) > stall) {
+				if (fabs(pitch_deflection) > stall && AltitudeAGL() > Radius()) {
 					ApplyPitch(pitch_deflection * -1.2);
 					dp += (float) (dp_acc * seconds);
 				}
@@ -3031,7 +3034,7 @@ Ship::LinearFrame(double seconds)
 	// up-and-down
 	if (!trans_z) {
 		Point transvec = cam.vup();
-		transvec *= (transvec * velocity) * seconds * 0.5;
+		transvec *= (transvec * velocity) * seconds * 0.65;
 		velocity -= transvec;
 	}
 }
@@ -3438,6 +3441,11 @@ Ship::ShowRep()
 		}
 	}
 
+	if (pilotRep)
+		pilotRep->Show();
+	if (canopyRep)
+		canopyRep->Show();
+
 	ListIter<WeaponGroup> g = weapons;
 	while (++g) {
 		ListIter<Weapon> w = g->GetWeapons();
@@ -3477,6 +3485,11 @@ Ship::HideRep()
 			if (g) g->Hide();
 		}
 	}
+
+	if (pilotRep)
+		pilotRep->Hide();
+	if (canopyRep)
+		canopyRep->Hide();
 
 	ListIter<WeaponGroup> g = weapons;
 	while (++g) {

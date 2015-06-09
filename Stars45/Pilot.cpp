@@ -229,8 +229,10 @@ Pilot::Eject()
 		ejected = true;
 		Disabled();
 
+		ShipStats* dis = ShipStats::Find(ship->Name());
+		dis->AddEvent(SimEvent::EJECT);
 	
-		if(gender != 1) {
+		if(ship->GetPilot()->GetGender() != 1) {
 			Solid* s = (Solid*) eject->Rep();
 			s->UseModel(ship->GetPilotRep2());
 		}

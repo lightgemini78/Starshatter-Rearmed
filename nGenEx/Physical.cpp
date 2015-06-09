@@ -422,7 +422,7 @@ Physical::LinearFrame(double seconds)
 
 	if (trans_z) { // up-and-down
 		Point transvec = cam.vup();
-		transvec *= ((trans_z/mass) * seconds);
+		transvec *= ((trans_z/mass) * seconds) * 2;			//**Compensate extra gravity
 
 		velocity += transvec;
 	}
@@ -776,18 +776,11 @@ Physical::SemiElasticCollision(Physical& a, Physical& b)
 void
 Physical::SemiElasticCollision_single(Physical& a)
 {
-	double mass_sum   = a.mass + 6e4;
-	double mass_delta = a.mass - 6e4;
-
-	Point avel  = a.Velocity();
-	Point bvel  = Point(0, -avel.y, 0);
-	Point dv    = avel - bvel;
-
-	// F=2*N +I
-
-
-
-
+	
+	Point avel = a.Velocity();
+	double d   = fabs(avel.y) ;
+	Point n = Point(0, d, 0);
+	a.velocity = avel + n;
 
 }
 

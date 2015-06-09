@@ -357,10 +357,10 @@ Thruster::ExecTrans(double x, double y, double z)
 	if (ship->Rep() && ship->Rep()->Hidden())
 	show_flare = false;
 
-	if (ship->Class() == Ship::LCA && 
+	if (/*ship->Class() == Ship::LCA && */			//** preparing for no atmo terran regions 
 			ship->IsAirborne() &&
-			ship->Velocity().length() < 250 &&
-			ship->AltitudeAGL() > ship->Radius()/2) {
+			ship->Velocity().length() < 250 
+			/*ship->AltitudeAGL() > ship->Radius()/2 */) {
 
 		sound_on = true;
 		IncBurn(BOTTOM, TOP);
