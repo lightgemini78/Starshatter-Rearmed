@@ -1,4 +1,4 @@
-/*  Project Starshatter 5.0
+﻿/*  Project Starshatter 5.0
 	Destroyer Studios LLC
 	Copyright (C) 1997-2007. All Rights Reserved.
 
@@ -1135,7 +1135,7 @@ MFD::DrawGameMFD()
 
 	if (lines <= 4) return;
 
-	if (ship->GetPilot()) {
+	if (ship && ship->GetPilot()) {
 		//Player* guy = Player::GetCurrentPlayer();		//** optional display player name
 		//sprintf_s(pilot, "%s" , guy->Name());
 

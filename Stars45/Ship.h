@@ -422,6 +422,7 @@ public:
 	bool					Escapejump()    {return es_jump;	}  //**Jump away functions.
 	float					Escapehull();
 	List<Ship>&			    wslot()			{return wslots;		}	//**stores ships defending the same ward.used for formation slot assign.
+	List<Ship>&				wfslot()		{return wfslots;	}	//**fighter only slots.
 
 
 	// DAMAGE CONTROL AND ENGINEERING:
@@ -591,6 +592,7 @@ protected:
 	bool			  es_jump;   //** jump away bool
 	float		      es_hull;
 	List<Ship>		  wslots;	//**ward list of escorts
+	List<Ship>		  wfslots;	//**fighter only slots
 
 	bool              master_caution;
 	bool              auto_repair;

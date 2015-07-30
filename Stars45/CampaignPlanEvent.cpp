@@ -202,7 +202,7 @@ CampaignPlanEvent::ExecScriptedEvents()
 
 								if (zone) {
 									g->SetAssignedZone(zone);
-									g->SetZoneLock(true);
+									g->SetZoneLock(true);		//++true
 									found = true;
 
 									// don't announce the move unless it's for the player's team:

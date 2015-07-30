@@ -35,6 +35,7 @@
 #include "GameScreen.h"
 #include "MenuView.h"
 #include "Pilot.h"
+#include "ShipAI.h"
 
 #include "Projector.h"
 #include "Color.h"
@@ -696,7 +697,7 @@ TacticalView::DoMouseFrame()
 // +--------------------------------------------------------------------+
 
 bool
-TacticalView::SelectAt(int x, int y)
+TacticalView::SelectAt(int x, int y)		//** Target selection by drag box  or select it for info and camera focus
 {
 	if (!ship) return false;
 
@@ -910,6 +911,11 @@ static Menu*         formation_menu = 0;
 static Menu*         sensors_menu   = 0;
 static Menu*         quantum_menu   = 0;
 static Menu*         farcast_menu   = 0;
+static Menu*		 squad_menu		= 0;	//** Battle group menu
+static Menu*	     command_menu	= 0;
+static Menu*		 silent_menu	= 0;
+static Menu*		 form_menu		= 0;
+static Menu*		 offset_menu	= 0;
 
 static Element*      dst_elem       = 0;
 
@@ -924,6 +930,20 @@ enum   VIEW_MENU {
 	VIEW_FLT,
 	VIEW_INS,
 	VIEW_CMD
+};
+
+enum	BATTLE_GROUP {
+	ASSEMBLE	= 2100,
+	DISMISS,
+	EMCON1,
+	EMCON2,
+	EMCON3
+};
+
+enum	GROUP_FORMATION {
+	GROUP_DIAMOND	= 2200,
+	GROUP_WALL		= 2202,
+	GROUP_TRAIL
 };
 
 const int QUANTUM = 2000;
@@ -961,6 +981,27 @@ TacticalView::Initialize()
 	formation_menu->AddItem(Game::GetText("TacView.item.box"),       RadioMessage::GO_BOX);
 	formation_menu->AddItem(Game::GetText("TacView.item.trail"),     RadioMessage::GO_TRAIL);
 
+	form_menu = new(__FILE__,__LINE__) Menu("Formation");
+	form_menu->AddItem("Diamond" , GROUP_DIAMOND);
+	form_menu->AddItem("Wall" ,	   GROUP_WALL);
+	form_menu->AddItem("Trail" ,   GROUP_TRAIL);
+
+	squad_menu = new(__FILE__,__LINE__) Menu("Battle Group");		//**Battlegroup menus
+	squad_menu->AddItem("Form up", RadioMessage::FORM_UP);
+	squad_menu->AddItem("Leave" ,  RadioMessage::RESUME_MISSION);
+	squad_menu->AddMenu("Formation" , form_menu);
+
+	silent_menu = new(__FILE__,__LINE__) Menu("Run Silent");
+	silent_menu->AddItem("Emcon1", EMCON1);
+	silent_menu->AddItem("Emcon2", EMCON2);
+	silent_menu->AddItem("Emcon3", EMCON3);
+
+	command_menu = new(__FILE__,__LINE__) Menu("Battle Group");
+	command_menu->AddItem("Assemble", ASSEMBLE);
+	command_menu->AddItem("Dismiss"	, DISMISS);
+	command_menu->AddMenu("Formation" , form_menu);
+	command_menu->AddMenu("Run Silent" , silent_menu);
+
 	sensors_menu = new(__FILE__,__LINE__) Menu(Game::GetText("TacView.menu.emcon"));
 	sensors_menu->AddItem(Game::GetText("TacView.item.emcon-1"),  RadioMessage::GO_EMCON1);
 	sensors_menu->AddItem(Game::GetText("TacView.item.emcon-2"),  RadioMessage::GO_EMCON2);
@@ -979,10 +1020,12 @@ TacticalView::Initialize()
 	fighter_menu->AddMenu(Game::GetText("TacView.item.farcast"),   farcast_menu);
 
 	starship_menu = new(__FILE__,__LINE__) Menu(Game::GetText("TacView.menu.context"));
+	starship_menu->AddMenu("Battle Group",							squad_menu);
 	starship_menu->AddMenu(Game::GetText("TacView.item.action"),   action_menu);
 	starship_menu->AddMenu(Game::GetText("TacView.item.sensors"),  sensors_menu);
 	starship_menu->AddItem(Game::GetText("TacView.item.patrol"),   RadioMessage::MOVE_PATROL);
 	starship_menu->AddItem(Game::GetText("TacView.item.cancel"),   RadioMessage::RESUME_MISSION);
+	
 	starship_menu->AddItem("", 0);
 	starship_menu->AddMenu(Game::GetText("TacView.item.quantum"),  quantum_menu);
 	starship_menu->AddMenu(Game::GetText("TacView.item.farcast"),  farcast_menu);
@@ -1003,6 +1046,10 @@ TacticalView::Close()
 	delete sensors_menu;
 	delete quantum_menu;
 	delete farcast_menu;
+	delete squad_menu;
+	delete command_menu;
+	delete silent_menu;
+	delete form_menu;
 }
 
 // +--------------------------------------------------------------------+
@@ -1043,8 +1090,9 @@ TacticalView::ProcessMenuItem(int action)
 		if (msg_ship) {
 			Element* elem = msg_ship->GetElement();
 			RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, action);
-			if (msg)
+			if (msg) 
 			RadioTraffic::Transmit(msg);
+			
 		}
 		else if (ship) {
 			if (action == RadioMessage::GO_EMCON1)
@@ -1055,6 +1103,129 @@ TacticalView::ProcessMenuItem(int action)
 			ship->SetEMCON(3);
 			else if (action == RadioMessage::LAUNCH_PROBE)
 			ship->LaunchProbe();
+		}
+		break;
+
+	case RadioMessage::FORM_UP:			//**Battlegroup stuff
+		if (msg_ship) {
+			Element* elem = msg_ship->GetElement();
+			RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::ESCORT);
+			if (msg) {
+				msg->AddTarget(ship);
+				RadioTraffic::Transmit(msg);
+			}
+		}
+		break;
+
+	case ASSEMBLE:
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard) {
+					Element* elem = guard->GetElement();
+					RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::ESCORT);
+					if (msg) {
+						msg->AddTarget(ship);
+						RadioTraffic::Transmit(msg);
+					}				
+				}
+			}
+		}
+		break;
+
+	case DISMISS:
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard) {
+					Element* elem = guard->GetElement();
+					RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::RESUME_MISSION);
+					if (msg) {
+						msg->AddTarget(ship);
+						RadioTraffic::Transmit(msg);
+					}				
+				}
+			}
+		}
+		break;
+
+	case EMCON1:
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard) {
+					Element* elem = guard->GetElement();
+					RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::GO_EMCON1);
+					if (msg) {
+						RadioTraffic::Transmit(msg);
+					}				
+				}
+			}
+			ship->SetEMCON(1);
+		}
+		break;
+
+	case EMCON2:
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard) {
+					Element* elem = guard->GetElement();
+					RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::GO_EMCON2);
+					if (msg) {
+						RadioTraffic::Transmit(msg);
+					}				
+				}
+			}
+			ship->SetEMCON(2);
+		}
+		break;
+
+	case EMCON3:
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard) {
+					Element* elem = guard->GetElement();
+					RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(elem, ship, RadioMessage::GO_EMCON3);
+					if (msg) {
+						RadioTraffic::Transmit(msg);
+					}				
+				}
+			}
+			ship->SetEMCON(3);
+		}
+		break;
+
+	case GROUP_DIAMOND:
+	case GROUP_WALL:
+	case GROUP_TRAIL:
+		action -= 2200;
+		if(msg_ship) {
+			msg_ship->GetRadioOrders()->SetFormation(action);
+		}
+
+		else if (ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard && guard->GetLeader() != ship)
+					continue;
+				if(guard && !guard->IsCold() || !guard->IsDying()) {
+					guard->GetRadioOrders()->SetFormation(action);
+				}
+			}
+			ListIter<Ship> fiter = ship->wfslot();
+			while (++fiter) {
+				Ship* fguard = fiter.value();
+				if(fguard && !fguard->IsCold() && fguard->GetPilot()->Alive())
+					fguard->GetRadioOrders()->SetFormation(action);
+			}
 		}
 		break;
 
@@ -1172,6 +1343,7 @@ TacticalView::BuildMenu()
 	}
 
 	// build the main menu:
+	main_menu->AddMenu("Battle Group",							  command_menu);
 	main_menu->AddMenu(Game::GetText("TacView.item.camera"),         view_menu);
 	main_menu->AddItem("", 0);
 	main_menu->AddItem(Game::GetText("TacView.item.instructions"),   VIEW_INS);

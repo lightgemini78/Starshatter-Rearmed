@@ -206,8 +206,8 @@ Shield::DeflectDamage(Shot* shot, double damage)
 			double deflected = Sdamage - (2 * pow(Sdamage,shield_factor));   //***** Shield damage takes control of damage to shields.
 
 			stress_level += deflected - (deflected * shield_factor);		//***** Shield stress handling and resolution.
-				if (stress_level > capacity * 2)  {								//***** More shield factor means slower stress build up.
-					ApplyDamage(stress * stress_level/(capacity*2) );			//***** shield overkill causes increased proportional damage to system.
+				if (stress_level > capacity * 4)  {								//***** More shield factor means slower stress build up.
+					ApplyDamage(stress * stress_level/(capacity*4) );			//***** shield overkill causes increased proportional damage to system.
 					stress_level = 1;
 				}
 			

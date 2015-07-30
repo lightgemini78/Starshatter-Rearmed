@@ -2737,7 +2737,7 @@ SimRegion::DamageShips()
 
 					// then delete the ship:
 					if (ship_destroyed) {
-						overkill = shot->Damage() > ((double) ship->Design()->integrity) / 3;	//** condition for insta kill
+						overkill = shot->Damage() > ((double) ship->Design()->integrity) * 0.75;	//** condition for insta kill
 
 						NetUtil::SendObjKill(ship, owner, shot->IsMissile() ? NetObjKill::KILL_SECONDARY : NetObjKill::KILL_PRIMARY);
                         Director* director;
@@ -2822,10 +2822,11 @@ SimRegion::DamageShips()
 
 					if (shot->IsDrone())
 					drones.remove((Drone*) shot);
-
+				
 					shot_iter.removeItem();
 					delete shot;
 					shot = 0;
+					
 				}
 				else if (!shot->HitTarget()) {
 					shot->SetHitTarget(true);

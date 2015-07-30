@@ -18,6 +18,8 @@
 #include "Types.h"
 #include "TacticalAI.h"
 
+class CombatUnit;
+
 // +--------------------------------------------------------------------+
 
 class StarshipTacticalAI : public TacticalAI
@@ -34,13 +36,19 @@ protected:
 	virtual void      FindSupport();
 
 	virtual void      CheckBugOut(Ship* c_ship, double range);
-	virtual void	  BattleGroupSlot(Ship* lead);
+	virtual void	  BattleGroupForm(bool f);
+	virtual void	  AddSquadlist();
+	virtual void	  UpdateSquadList();
+
+	CombatUnit*		  FindCombatLeader(Ship* s);
 
 	DWORD             THREAT_REACTION_TIME;
 	int               ai_level;
 	double            drop_time;
 	double            initial_integrity;
 	bool              bugout;
+	bool			  reported;
+	bool			  formed;
 };
 
 // +--------------------------------------------------------------------+

@@ -119,12 +119,14 @@ StarshipAI::FindObjective()
 
 	// under orders?
 	bool   directed      = false;
+	bool   hold_on		 = false;	//**for breaking formation and charge
 	double threat_level  = 0;
 	double support_level = 1;
 	Ship*  ward          = ship->GetWard();
 
 	if (tactical) {
 		directed      = (tactical->RulesOfEngagement() == TacticalAI::DIRECTED);
+		hold_on		  = (tactical->RulesOfEngagement() == TacticalAI::DEFENSIVE);
 		threat_level  = tactical->ThreatLevel();
 		support_level = tactical->SupportLevel();
 	}
@@ -135,7 +137,7 @@ StarshipAI::FindObjective()
 		// seek support:
 		if (support) {
 			double d_support = Point(support->Location() - ship->Location()).length();
-			if (d_support > 35e3) {
+			if (d_support > 60e3) {  //35
 				ship->SetDirectorInfo(Game::GetText("ai.regroup"));
 				FindObjectiveTarget(support);
 				objective = Transform(obj_w);
@@ -171,19 +173,20 @@ StarshipAI::FindObjective()
 	}
 
 	// normal processing:
-	else if (target) {
+	else if (target && !hold_on) {
 		ship->SetDirectorInfo(Game::GetText("ai.seek-target"));
 		FindObjectiveTarget(target);
+	}
+
+	else if (ward) {
+		ship->SetDirectorInfo(Game::GetText("ai.seek-ward"));
+		FindGroupFormation();
+		FindObjectiveFormation();
 	}
 
 	else if (patrol) {
 		ship->SetDirectorInfo(Game::GetText("ai.patrol"));
 		FindObjectivePatrol();
-	}
-
-	else if (ward) {
-		ship->SetDirectorInfo(Game::GetText("ai.seek-ward"));
-		FindObjectiveFormation();
 	}
 
 	else if (navpt) {
@@ -375,7 +378,51 @@ StarshipAI::ThrottleControl()
 	}
 
 	else if (ward) {           // escort, match speed of ward
-		double speed = ward->Velocity().length();
+		double zone = ship->Radius() * 3;
+		double ws = ward->Velocity().length();
+		double ss = ship_speed;
+
+		if (distance < 1e3) 
+		throttle = old_throttle;
+
+		if (distance >  zone*3)
+			throttle = 100;
+		
+		else if (distance >  zone) {
+			if((ss - ws) > 300) {
+			throttle = 0;
+			brakes = 0.5;
+			}
+
+			else if((ss - ws) < 250)
+				throttle = ward->Throttle() + 20;
+
+			else throttle = 0;
+		}
+
+		else if (distance < -zone*2) {
+			throttle = old_throttle - 10;
+			brakes   = 1;
+		}
+		else if (distance < -zone) {
+			throttle = old_throttle;
+			brakes   = 1;
+		}
+		else {
+		double ds = ws - ss;
+		double at = 0;
+
+		if (ds > 0)
+			at = ds  * seconds;
+		else if (ds < 0) {
+			at = ds  * seconds;
+			brakes = 1;
+			}
+		throttle = old_throttle + at;
+		}
+
+
+/**		double speed = ward->Velocity().length();
 		throttle = old_throttle;
 
 		if (speed == 0) {
@@ -397,7 +444,7 @@ StarshipAI::ThrottleControl()
 		else {
 			throttle = 0;
 			brakes   = 0.5;
-		}
+		}	**/
 	}
 
 	else if (patrol || farcaster) {  // seek patrol point

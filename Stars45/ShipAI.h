@@ -56,6 +56,7 @@ public:
 	virtual void      ClearPatrol();
 	virtual void      ClearRumor();
 	virtual void      ClearTactical();
+	virtual void	  FindGroupFormation();	//**Battlegroup formations
 
 	virtual Farcaster* GetFarcaster() { return farcaster; }
 
@@ -122,6 +123,7 @@ protected:
 	Ship*             threat;
 	Shot*             threat_missile;
 	Instruction*      navpt;
+	Instruction*	  orders;
 	Point             obstacle;
 	TacticalAI*       tactical;
 	Farcaster*        farcaster;
@@ -147,6 +149,7 @@ protected:
 	bool              hold;
 	bool              takeoff;
 	int				  wardslot;		//**ward list index for formation slot
+	int				  old_formation;
 
 	int               patrol;
 	Point             patrol_loc;

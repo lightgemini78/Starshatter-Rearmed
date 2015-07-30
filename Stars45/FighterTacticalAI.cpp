@@ -228,7 +228,7 @@ FighterTacticalAI::SelectTargetOpportunity()
 	if (roe < FLEXIBLE)
 	target_dist = 0.5 * ship->Design()->commit_range;
 
-	int class_limit = Ship::LCA;
+	int class_limit = Ship::CORVETTE;
 
 	if (ship->Class() == Ship::ATTACK)
 	class_limit = Ship::DESTROYER;
@@ -248,11 +248,15 @@ FighterTacticalAI::SelectTargetOpportunity()
 				alive = false;
 		}
 
-		if (!rogue && (c_iff <= 0 || c_iff == ship->GetIFF() || c_iff == 1000))
+		if (!rogue && (c_iff <= 0 || c_iff == ship->GetIFF() || c_iff == 1000 || !alive))
 		continue;
 
 		// reasonable target?
-		if (c_ship && c_ship->Class() <= class_limit && !c_ship->InTransition() && alive) {
+		if (c_ship && c_ship->Class() <= class_limit && !c_ship->InTransition()) {
+
+			// found an enemy, check distance:
+			double dist = (ship->Location() - c_ship->Location()).length();
+
 			if (!rogue) {
 				SimObject* ttgt = c_ship->GetTarget();
 
@@ -261,12 +265,9 @@ FighterTacticalAI::SelectTargetOpportunity()
 				continue;
 
 				// if we are defending, is this contact engaging us or our ward?
-				if (roe == DEFENSIVE && ttgt != ship && ttgt != ward)
+				if (roe == DEFENSIVE && ttgt != ship && ttgt != ward && dist > 50e3)
 				continue;
 			}
-
-			// found an enemy, check distance:
-			double dist = (ship->Location() - c_ship->Location()).length();
 
 			if (dist < 0.75 * target_dist) {
 

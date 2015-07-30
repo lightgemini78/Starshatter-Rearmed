@@ -30,6 +30,8 @@
 #include "StarSystem.h"
 #include "Starshatter.h"
 #include "Random.h"
+#include "CombatUnit.h"
+#include "CombatGroup.h"
 
 #include "Game.h"
 
@@ -38,7 +40,7 @@ const double STARSHIP_TACTICAL_DROP_TIME = 15;
 // +----------------------------------------------------------------------+
 
 StarshipTacticalAI::StarshipTacticalAI(ShipAI* ai)
-: TacticalAI(ai), drop_time(1.0e9), bugout(false), ai_level(0), initial_integrity(0)
+: TacticalAI(ai), drop_time(1.0e9), bugout(false), ai_level(0), initial_integrity(0), reported(false), formed(false)
 {
 	if (ai && ai->GetShip()) {
 		ai_level          = ai->GetAILevel();
@@ -67,6 +69,14 @@ StarshipTacticalAI::~StarshipTacticalAI()
 void
 StarshipTacticalAI::ExecFrame(double seconds)
 {
+	//UpdateSquadList();
+
+	if(!reported)
+	AddSquadlist();
+
+	if(!formed && ship->MissionClock() < 10000)
+	BattleGroupForm(true);
+
 	TacticalAI::ExecFrame(seconds);
 
 
@@ -77,6 +87,7 @@ StarshipTacticalAI::ExecFrame(double seconds)
 
 		ship_ai->DropTarget(STARSHIP_TACTICAL_DROP_TIME/4);
 	}
+
 }
 
 // +--------------------------------------------------------------------+
@@ -88,8 +99,8 @@ StarshipTacticalAI::FindThreat()
 	Ship*       threat_ship          = 0;
 	Shot*       threat_missile       = 0;
 	Ship*       rumor                = 0;
-	double      threat_dist          = 1e9;
-	double      CELL_SIZE            = 20e3;
+	double      threat_dist          = 1e9; 
+	double      CELL_SIZE            = 60e3;	//20e3
 
 	threat_level   = 0;
 	support_level  = ship->AIValue() / CELL_SIZE;
@@ -101,9 +112,9 @@ StarshipTacticalAI::FindThreat()
 		Ship*    c_ship  = contact->GetShip();
 		Shot*    c_shot  = contact->GetShot();
 
-		if (!c_ship && !c_shot)
+		if (!c_ship && !c_shot)  
 		continue;
-
+		
 		if (c_ship && c_ship != ship) {
 			double basis    = max(contact->Range(ship), CELL_SIZE);
 			double ai_value = c_ship->AIValue() / basis;
@@ -145,7 +156,7 @@ StarshipTacticalAI::FindThreat()
 						threat_ship = c_ship;
 						threat_dist = rng;
 					}
-
+					
 					CheckBugOut(c_ship, rng);
 				}
 			}
@@ -163,6 +174,23 @@ StarshipTacticalAI::FindThreat()
 			}
 		}
 	}
+
+	double range = threat_dist;
+
+	if(threat_ship) {
+		if(range < 50e3 && threat_ship->Class() >= Ship::DESTROYER) {	//** Formation decisions
+			if(formed)
+			BattleGroupForm(false);
+			}
+
+		else if(range < 500e3 && !formed && threat_ship->Class() >= Ship::DESTROYER) {
+			BattleGroupForm(true);
+			} 
+	}
+
+	else if(!formed) 
+		BattleGroupForm(true);
+
 
 	ship_ai->SetRumor(rumor);
 	ship_ai->SetThreat(threat_ship);
@@ -195,7 +223,7 @@ StarshipTacticalAI::FindSupport()
 				support = c_ship;
 			}
 		}
-	}
+	} 
 
 	ship_ai->SetSupport(support);
 }
@@ -278,23 +306,87 @@ StarshipTacticalAI::CheckBugOut(Ship* c_ship, double rng)
 }
 
 void
-StarshipTacticalAI::BattleGroupSlot(Ship* lead)
+StarshipTacticalAI::BattleGroupForm(bool f)			//**Orders ship to join or leave formation
 {
-	// find the formation delta:
-	
-	Point delta(10, 0, 10);
+	if(!ship)
+		return;
 
-	// diamond:
-/*	if (formation == Instruction::DIAMOND) {
-		switch (element_index) {
-		case 2:  delta = Point( 10,  0, -12); break;
-		case 3:  delta = Point(-10,  0, -12); break;
-		case 4:  delta = Point(  0,  0, -24); break;
-		case 5:  delta = Point( 15,  0, -30); break;
-		case 6:  delta = Point(-15,  0, -30); break;  
-		}  
-	}  */
+	if(ship->GetAIMode() > 1)
+		return;
+
+	if(f && formed || !f && !formed)
+		return;
+
+	Element* cmd = ship->GetElement()->GetCommander();
+
+	if(cmd) {
+		if(cmd->Player() > 0)
+			return;
+
+		if(f) {
+			RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(ship, cmd->GetShip(1), RadioMessage::ESCORT);
+			if(msg) {
+			msg->AddTarget(cmd->GetShip(1));
+			RadioTraffic::Transmit(msg);
+			formed = true;
+			}
+		}
+		else if(!f) {
+			RadioMessage* msg = new(__FILE__,__LINE__) RadioMessage(ship, cmd->GetShip(1), RadioMessage::RESUME_MISSION);
+			if(msg) {
+			RadioTraffic::Transmit(msg);
+			formed = false;
+			}
+		}
+	}	
+}
 
 
-	ship_ai->SetFormationDelta(delta * ship->Radius() * 2);
+void
+StarshipTacticalAI::AddSquadlist()		//** Add ship to commander Wslot list
+{
+	if(ship) {
+		Element* cmd = ship->GetElement()->GetCommander();
+		if(cmd) {
+		Ship*  s =	cmd->GetShip(1);
+			if(s) {
+				if(!s->wslot().contains(ship)) {
+					s->wslot().append(ship);
+				}				
+			reported = true;
+			}	
+		}
+	}
+}
+
+CombatUnit*
+StarshipTacticalAI::FindCombatLeader(Ship* s)
+{
+	if (!ship)
+		return 0;
+
+	CombatGroup* g = ship->GetElement()->GetCombatGroup();
+	if(g) {
+		ListIter<CombatUnit> iter = g->GetUnits();
+		while (++iter) {
+			CombatUnit* u = iter.value();
+			if (u->IsLeader())
+				return u;
+		}
+	}
+	return 0;
+}
+
+void
+StarshipTacticalAI::UpdateSquadList()
+{
+	if (!ship)
+		return;
+
+	List<Ship> w = ship->wslot();
+
+	if(w.isEmpty())
+		return;
+
+	w.clear();	
 }

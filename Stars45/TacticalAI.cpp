@@ -785,7 +785,7 @@ TacticalAI::CheckTarget()
 		}
 
 		// can we catch the target?
-		if (target->Design()->vlimit  <= ship->Design()->vlimit ||
+		if (target->Design()->vlimit  <= ship->Design()->vlimit ||		
 				ship->Velocity().length() <= ship->Design()->vlimit)
 		return;
 

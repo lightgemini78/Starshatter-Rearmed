@@ -181,7 +181,7 @@ FighterAI::ExecFrame(double s)
 		}
 	}
 																		//******** Damaged or dry fighters do RTB
-	if (ship->HullStrength() < 60 && rtb_code == 0 && !form_up || ship->GetFuelLevel() < 15 && rtb_code == 0 ) {
+	if (ship->HullStrength() < 65 && rtb_code == 0 && !form_up || ship->GetFuelLevel() < 15 && rtb_code == 0 ) {
 		Ship* base = ship->GetController();
 		Ship* lead = ship->GetLeader();
 		if (base && lead) {
@@ -843,7 +843,7 @@ FighterAI::ThrottleControl()
 		desired = 300;
 
 		else if (inbound->Final())
-		desired = 75 + carrier_speed; 
+		desired = 250 + carrier_speed;	//** 75		Dont take forever to land that kite.
 
 		throttle = 0;
 
@@ -1028,7 +1028,53 @@ FighterAI::ThrottleControl()
 		}
 		
 		else if (ward) {
-			double d = (ship->Location() - ward->Location()).length();
+
+			double zone = ship->Radius() * 3;
+
+			desired = ward->Velocity() * ward->Heading();
+
+			if (fabs(slot_dist) < distance/4) // try to prevent porpoising
+			throttle = old_throttle;
+
+			else if (slot_dist > zone*2) {
+				throttle = 100;
+
+				if (objective.z > 10e3 && ship_speed < desired && ship->GetFuelLevel() > 25)
+				augmenter = true;
+			}
+
+			else if (slot_dist > zone)
+			throttle = ward->Throttle() + 10;
+
+			else if (slot_dist < -zone*2) {
+				throttle = old_throttle - 10;
+				brakes   = 1;
+			}
+
+			else if (slot_dist < -zone) {
+				throttle = old_throttle;
+				brakes   = 0.5;
+			}
+
+			else if (ward) {
+				double lv = ward->Velocity().length();
+				double sv = ship_speed;
+				double dv = lv-sv;
+				double dt = 0;
+
+				if (dv > 0)       dt = dv * 1e-5 * frame_time;
+				else if (dv < 0)  dt = dv * 1e-2 * frame_time;
+
+				throttle = old_throttle + dt;
+			}
+
+			else {
+				throttle = old_throttle;
+			}
+
+
+
+/*			double d = (ship->Location() - ward->Location()).length();
 
 			if (d > 5000) {
 				if (ai_level < 1)
@@ -1048,7 +1094,7 @@ FighterAI::ThrottleControl()
 						throttle =  old_throttle + 1;
 					}
 				}
-			}
+			} */
 		}
 
 		else if (navpt) {
@@ -1183,7 +1229,7 @@ FighterAI::SeekTarget()
 
 	Ship* ward = ship->GetWard();
 
-	if ((!target && !ward && !navpt && !farcaster && !patrol && !inbound && !rtb_code) || ship->MissionClock() < 10000) {
+	if ((!target /*&& !ward*/ && !navpt && !farcaster && !patrol && !inbound && !rtb_code) || ship->MissionClock() < 10000) {
 		if (element_index > 1) {
 			// break formation if threatened:
 			if (threat_missile)
@@ -1196,6 +1242,7 @@ FighterAI::SeekTarget()
 			return SeekFormationSlot();
 		}
 		else {
+			if (!ward) 
 			return Steer();
 		}
 	}
@@ -1271,8 +1318,8 @@ FighterAI::SeekTarget()
 
 	SimObject* tgt = target;
 
-	if (ward && !tgt)
-	tgt = ward;
+//	if (ward && !tgt)
+//	tgt = ward;
 
 	if (tgt && too_close == tgt->Identity()) {
 		drop_time = 4;
@@ -1335,7 +1382,7 @@ FighterAI::SeekTarget()
 					if (gap < 1000)
 					return Flee(objective);
 
-					else if (ship->GetFlightModel() == Ship::FM_STANDARD && gap < 20e3)
+					else if (ship->GetFlightModel() == Ship::FM_STANDARD && gap < 20e3 && tgt_ship != ward)
 					go_manual = true;
 				}
 			}

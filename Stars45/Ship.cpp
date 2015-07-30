@@ -772,7 +772,7 @@ Ship::SetupAgility()
 
 			// wheel rolling friction
 			if (grounded)
-			drag *= 10.0f;
+			drag *= 100.0f;
 
 			// dead engine drag ;-)
 			if (thrust < 10)
@@ -3798,6 +3798,26 @@ Ship::DeathSpiral(bool instakill)
 	if (GetIFF() < 100 && !IsGroundUnit()) {
 		if(!IsCold())
 		RadioTraffic::SendQuickMessage(this, RadioMessage::DISTRESS);
+	}
+
+	//**If ship has ward, remove ship from its list.
+	Ship* w		 = this->GetWard();
+	Element* cmd = this->GetElement()->GetCommander();
+
+	if(w) {
+		if(w->wslot().contains(this))
+			w->wslot().remove(this);
+		else if(w->wfslot().contains(this))
+			w->wfslot().remove(this);
+	}
+	else if(cmd) {
+		Ship* c = cmd->GetShip(1);
+		if(c) {
+			if(c->wslot().contains(this))
+				c->wslot().remove(this);
+			else if(c->wfslot().contains(this))
+				c->wfslot().remove(this);
+		}		
 	}
 
 	transition_type = TRANSITION_DEATH_SPIRAL;

@@ -48,7 +48,7 @@ too_close(0), navpt(0), patrol(0), engaged_ship_id(0),
 bracket(false), identify(false), hold(false), takeoff(false),
 throttle(0), old_throttle(0), element_index(1), splash_count(0),
 tactical(0), farcaster(0), ai_level(2), last_avoid_time(0),
-last_call_time(0), last_sup_time(0) 
+last_call_time(0), last_sup_time(0), orders(0), wardslot(0)
 {
 	ship = (Ship*) self;
 
@@ -109,6 +109,8 @@ ShipAI::SetWard(Ship* s)
     if (ship)
         ship->SetWard(s);
 
+	FindGroupFormation();
+
 /*	Point form = RandomDirection();
 	form.SwapYZ();
 
@@ -126,39 +128,6 @@ ShipAI::SetWard(Ship* s)
 		form *= 15e3;
 		form.y = 500;
 	}  */
-
-	if (ship != ship->GetLeader() )		//**only element leader get slots,wingmans form up with leader.
-	return;
-
-	Point form(1, 1, 1);			
-
-	Ship* def = ship->GetWard();
-	
-	if (def && !def->wslot().contains(ship) ) {		//**Add ship to ward list.
-		def->wslot().append(ship);
-	}
-	if (def && def->wslot().contains(ship) ) {		//**Get ward list index for formation slot.
-		wardslot = def->wslot().index(ship);
-				
-		switch (wardslot) {
-		case 0:  form = Point(  4,  0,   0); break;
-		case 1:  form = Point( -4,  0,   0); break;
-		case 2:  form = Point(  6,  4,   2); break;
-		case 3:  form = Point( -6,  4,   2); break;
-		case 4:  form = Point(  6, -4,   2); break;
-		case 5:  form = Point(  6, -4,   2); break;
-		case 6:  form = Point(  0,  6,   0); break;
-		}
-	}
-		
-		if (ship && ship->IsStarship()) {
-		form *= 5e3;
-		}	
-	else {
-		form *= 3e3;
-	}
-
-	SetFormationDelta(form);
 }
 
 
@@ -297,7 +266,6 @@ ShipAI::ExecFrame(double secs)
 	return;
 
 	element_index = ship->GetElementIndex();
-	wardslot	  = 0;							//**init ward slot
 
 	NavlightControl();
 	CheckTarget();
@@ -485,6 +453,7 @@ ShipAI::FindObjective()
 
 	else if (ward) {
 		ship->SetDirectorInfo(Game::GetText("ai.seek-ward"));
+		FindGroupFormation();
 		FindObjectiveFormation();
 		objective = Transform(obj_w);
 	}
@@ -800,8 +769,11 @@ ShipAI::FindObjectiveFormation()
 
 	obj_w       = lead->Location() + lead->Velocity() * prediction;
 	Matrix m;   m.Rotate(0, 0, lead->CompassHeading() - PI);
-	Point  fd   = formation_delta * m;
-	obj_w       += fd;
+	Point  fd   = formation_delta;
+	if(lead->Class() < Ship::COURIER)
+		fd	= fd * m;
+		obj_w	+= fd;
+
 
 	// try to avoid smacking into the ground...
 	if (ship->IsAirborne()) {
@@ -1095,7 +1067,7 @@ ShipAI::AvoidCollision()
 	brake = 0;
 
 	// don't get closer than this:
-	double avoid_dist = 5 * self->Radius();
+	double avoid_dist = 3 * self->Radius();		//** 5
 
 	if      (avoid_dist <  1e3) avoid_dist =  1e3;
 	else if (avoid_dist > 12e3) avoid_dist = 12e3;
@@ -1412,7 +1384,7 @@ ShipAI::WithDraw()				//****** Flee from superior numbers towards support ******
 	ListIter<Contact> iter = ship->ContactList();
 	while (++iter) {
 		Contact* contact = iter.value();						//****** Count nearby total value of foes and friends
-		if (contact && contact->Range(ship) < 50e3) {
+		if (contact && contact->Range(ship) < 80e3) {
 
 			Ship* unit = contact->GetShip();
 			if (unit && ship->IsHostileTo(unit) && unit->Class() == Ship::FIGHTER)       //***** Only fighters  count.(bombers will not scare fighters away)
@@ -1429,3 +1401,135 @@ ShipAI::WithDraw()				//****** Flee from superior numbers towards support ******
 	
 	return withdraw;
 }
+
+void
+ShipAI::FindGroupFormation()
+{
+	if (!ship || ship != ship->GetLeader() )		//**only element leader get slots,wingmans form up with leader.
+	return;
+
+	Point form(1, 1, 1);	
+	int format = 0;
+	Instruction* orders = ship->GetRadioOrders();
+
+	if(orders && orders->Formation() >= 0)
+		format = orders->Formation();
+
+	if(old_formation == format)
+		return;
+		
+	Ship* def = ship->GetWard();
+
+	if(def && ship->Class() <= Ship::LCA) {		//** Add ship to fighter ward list if LCA or less.
+		if(!def->wfslot().contains(ship))
+			def->wfslot().append(ship);
+
+		if(def->wfslot().contains(ship)) {
+			wardslot = def->wfslot().index(ship);
+
+			if(format == Instruction::DIAMOND) {
+
+				switch (wardslot) {
+				case 0:  form = Point(  0,  1, -3); break;
+				case 1:  form = Point(  4,  0,  0); break;
+				case 2:  form = Point( -4,  0,  0); break;
+				case 3:  form = Point(  0,  0, 3.5); break;
+				default: form = Point(  0, wardslot, wardslot);
+				}
+			}
+		
+			if(format == Instruction::BOX) {
+
+				switch (wardslot) {
+				case 0:  form = Point(  5,  0,  0); break;
+				case 1:  form = Point( -5,  0,  0); break;
+				case 2:  form = Point(  0,  3,  0); break;
+				case 3:  form = Point(  0, -3,  0); break;
+				default: form = Point(  0, wardslot, wardslot);
+				}
+			}
+
+			if(format == Instruction::TRAIL) {
+
+				switch (wardslot) {
+				case 0:  form = Point(  0,  4,  0); break;
+				case 1:  form = Point(  0, -4,  0); break;
+				case 2:  form = Point(  4,  0,  0); break;
+				case 3:  form = Point( -4,  0,  0); break;
+				default: form = Point(  0, wardslot, wardslot);
+				}
+			}
+		}
+	}
+
+	else {
+	if (def && !def->wslot().contains(ship) ) {		//**Add ship to ward list.
+		def->wslot().append(ship);
+	}	
+	if (def && def->wslot().contains(ship) ) {		//**Get ward list index for formation slot.
+		wardslot = def->wslot().index(ship);
+		
+		if(format == Instruction::DIAMOND) {
+
+			switch (wardslot) {
+			case 0:  form = Point(  2, -1,  -1); break;
+			case 1:  form = Point( -2, -1,  -1); break;
+			case 2:  form = Point(  0,  1,   1); break;
+			case 3:  form = Point(  0,  2,   0); break;
+			case 4:  form = Point(  0, -2,   0); break;
+			case 5:  form = Point(  3,  2,  -2); break;
+			case 6:  form = Point( -3,  2,  -2); break;
+			case 7:  form = Point(  0, -1,	 3); break;
+			case 8:  form = Point(  4, 1.5,	 1); break;
+			case 9:  form = Point( -4, 1.5,	 1); break;
+			default: form = Point(  0, wardslot * 0.5, wardslot * 0.5);
+			}
+		}
+
+		if(format == Instruction::BOX) {
+
+			switch (wardslot) {
+			case 0:  form = Point(  2,  0,   0); break;
+			case 1:  form = Point( -2,  0,   0); break;
+			case 2:  form = Point(  2,  2,   0); break;
+			case 3:  form = Point( -2,  2,   0); break;
+			case 4:  form = Point(  2, -2,   0); break;
+			case 5:  form = Point( -2, -2,   0); break;
+			case 6:  form = Point(  4,  0,   0); break;
+			case 7:  form = Point( -4,  0,	 0); break;
+			case 8:  form = Point(  4, -2,	 0); break;
+			case 9:  form = Point( -4, -2,	 0); break;
+			default: form = Point(  0, wardslot * 0.5, wardslot);
+			}
+		}
+
+		if(format == Instruction::TRAIL) {
+
+			switch (wardslot) {
+			case 0:  form = Point(  1,  1,  2); break;
+			case 1:  form = Point( -1, -1,  4); break;
+			case 2:  form = Point(  1,  1,  6); break;
+			case 3:  form = Point( -1, -1,  8); break;
+			case 4:  form = Point(  1,  1,  10); break;
+			case 5:  form = Point( -1, -1,  12); break;
+			case 6:  form = Point(  1,  1,  14); break;
+			case 7:  form = Point( -1, -1,	16); break;
+			case 8:  form = Point(  1,  1,	18); break;
+			case 9:  form = Point( -1, -1,	20); break;
+			default: form = Point(  0,  0, wardslot + 12);
+				}
+			}
+		}
+	}	
+		if (ship->IsStarship()) {
+		form *= 5e3;
+		}	
+	else {
+		form *= 3.5e3;
+	}
+	old_formation = format;
+
+	SetFormationDelta(form);
+}
+
+
