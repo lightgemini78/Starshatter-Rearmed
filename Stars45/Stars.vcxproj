@@ -977,6 +977,7 @@
     <ClCompile Include="ShipAI.cpp" />
     <ClCompile Include="ShipCtrl.cpp" />
     <ClCompile Include="ShipDesign.cpp" />
+    <ClCompile Include="ShipGraveyard.cpp" />
     <ClCompile Include="ShipKiller.cpp" />
     <ClCompile Include="ShipSolid.cpp" />
     <ClCompile Include="Shot.cpp" />
@@ -1165,6 +1166,7 @@
     <ClInclude Include="SeekerAI.h" />
     <ClInclude Include="ShieldRep.h" />
     <ClInclude Include="ShipCtrl.h" />
+    <ClInclude Include="ShipGraveyard.h" />
     <ClInclude Include="ShipKiller.h" />
     <ClInclude Include="StarServer.h" />
     <ClInclude Include="Starshatter.h" />

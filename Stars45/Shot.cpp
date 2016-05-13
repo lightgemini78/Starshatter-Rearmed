@@ -510,7 +510,7 @@ Shot::Damage() const
 
 	// energy wep damage based on time:
 	else if (primary) {
-		damage = base_damage * charge * life/2;
+		damage = base_damage * charge * life/2;		// halved damage increase due to time
 	}
 
 	// missile damage is constant:

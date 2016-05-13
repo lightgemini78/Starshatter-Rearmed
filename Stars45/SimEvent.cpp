@@ -93,7 +93,8 @@ SimEvent::GetEventDesc() const
 	case MISSILE_KILL:   return Game::GetText("sim.event.Missile Kill");
 	case LAUNCH_PROBE:   return Game::GetText("sim.event.Launch Probe");
 	case SCAN_TARGET:    return Game::GetText("sim.event.Scan Target");
-	case PILOT_KILLED:	 return Game::GetText("sim.event.Pilot Killed");
+	case PILOT_KILLED:	 return Game::GetText("Pilot Killed");
+	case DISABLED:		 return Game::GetText("Disabled");
 	default:             return Game::GetText("sim.event.no event");
 	}
 }

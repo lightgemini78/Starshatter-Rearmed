@@ -58,6 +58,7 @@
 #include "Terrain.h"
 #include "TerrainPatch.h"
 #include "Pilot.h"
+#include "ShipGraveyard.h"
 
 #include "NetGame.h"
 #include "NetClientConfig.h"
@@ -133,6 +134,7 @@ start_time(0)
 	Shot::Initialize();
 	MFD::Initialize();
 	Asteroid::Initialize();
+	ShipGraveyard::Initialize();
 
 	if (!sim)
 	sim = this;
@@ -1119,7 +1121,7 @@ Explosion*
 Sim::CreateExplosion(const Point& pos, const Point& vel, int type, float exp_scale, float part_scale, SimRegion* rgn, SimObject* source, System* sys)
 {
 	// don't bother creating explosions that can't be seen:
-	if (!rgn || !active_region || rgn != active_region)
+	if (!rgn || /*!active_region ||*/ rgn != active_region)
 	return 0;
 
 	Explosion* exp = new(__FILE__,__LINE__) Explosion(type, pos, vel, exp_scale, part_scale, rgn, source);
@@ -1134,6 +1136,19 @@ Sim::CreateExplosion(const Point& pos, const Point& vel, int type, float exp_sca
 }
 
 // +--------------------------------------------------------------------+
+ShipGraveyard*
+Sim::CreateGraveyard(Ship* s,bool flydust, SimRegion* rgn)
+{
+	ShipGraveyard* tomb = new(__FILE__,__LINE__) ShipGraveyard(s,flydust, rgn);
+
+	if(rgn)
+		rgn->InsertObject(tomb);
+
+	else if (active_region)
+		active_region->InsertObject(tomb);
+
+	return tomb;
+}
 
 Debris*
 Sim::CreateDebris(const Point& pos, const Point& vel, Model* model, double mass, SimRegion* rgn)
@@ -1174,7 +1189,7 @@ Sim::CreateSplashDamage(Ship* ship)
 		SimSplash* splash = new(__FILE__,__LINE__)
 		SimSplash(ship->GetRegion(),
 		ship->Location(),
-		ship->Design()->integrity / 4,
+		ship->Design()->integrity / 100,	//** Vanilla 4, is too OP
 		ship->Design()->splash_radius);
 
 		splash->owner_name = ship->Name();
@@ -1205,6 +1220,7 @@ Sim::CreateSplashDamage(Shot* shot)
 
 		splashlist.append(splash);
 		CreateExplosion(shot->Location(), Point(), Explosion::SHOT_BLAST, 20.0f, 1.0f, shot->GetRegion());
+		CreateExplosion(shot->Location(), Point(),			27,			   0.2f, 1.0f, shot->GetRegion());	//smoke
 	}
 }
 
@@ -2262,12 +2278,22 @@ SimRegion::SimRegion(Sim* s, OrbitalRegion* r)
 
 		else if (orbital_region->Asteroids() > 0) {
 			int asteroids = orbital_region->Asteroids();
+			double RADIUS = 6e3;
 
 			for (int i = 0; i < asteroids; i++) {
 				Point init_loc((rand()-16384.0f) * 30,
 				(rand()-16384.0f) * 3,
 				(rand()-16384.0f) * 30);
-				sim->CreateAsteroid(init_loc, i, Random(1e7, 1e8), this); 
+
+				sim->CreateAsteroid(init_loc,i, Random(1e7, 1e8), this);
+
+				for (int i = 0; i < 6; i++) {
+				Point offset(Random(-RADIUS,RADIUS) + init_loc.x, 
+							 Random(-RADIUS,RADIUS) + init_loc.y, 
+							 Random(-RADIUS,RADIUS) + init_loc.z);
+				
+				sim->CreateAsteroid(offset, 3, Random(1e7, 1e8), this);
+				}
 			}
 		}
 	}
@@ -2286,6 +2312,7 @@ SimRegion::~SimRegion()
 	debris.destroy();
 	asteroids.destroy();
 	dead_ships.destroy();
+	graves.destroy();
 
 	for (int i = 0; i < 5; i++)
 	track_database[i].destroy();
@@ -2451,6 +2478,10 @@ SimRegion::Activate()
 	while (++a)
 	a->Activate(sim->scene);
 
+	ListIter<ShipGraveyard> gy = graves;
+	while (++gy)
+	gy->Activate(sim->scene);
+
 	if (grid)
 	sim->scene.AddGraphic(grid);
 
@@ -2487,6 +2518,10 @@ SimRegion::Deactivate()
 	ListIter<Asteroid> a = asteroids;
 	while (++a)
 	a->Deactivate(sim->scene);
+
+	ListIter<ShipGraveyard> gy = graves;
+	while (++gy)
+	gy->Deactivate(sim->scene);
 
 	if (grid)
 	sim->scene.DelGraphic(grid);
@@ -2677,6 +2712,17 @@ SimRegion::UpdateExplosions(double seconds)
 		}
 	}
 
+	ListIter<ShipGraveyard> grave_iter = graves;		//Ship graveyard execution
+	while (++grave_iter) {
+		ShipGraveyard* t = grave_iter.value();
+		t->ExecFrame(seconds);
+
+		if (t->Life() < 0.01) {  
+			grave_iter.removeItem();
+			delete t;
+		}
+	}
+
 	ListIter<Debris> debris_iter = debris;
 	while (++debris_iter) {
 		Debris* d = debris_iter.value();
@@ -2733,7 +2779,7 @@ SimRegion::DamageShips()
 				// live round:
 				else if (shot->Damage() > 0) {
 
-					int ship_destroyed = (!ship->InTransition() && ship->Integrity() < 1.0f || ship->GetPilot() && !ship->GetPilot()->CheckAlive()); //**Pilot Sys enters
+					int ship_destroyed = (!ship->InTransition() && /*!ship->IsCold() && ship->HullStrength() < 20 */ship->Integrity() < 1.0f  || ship->GetPilot() && !ship->GetPilot()->CheckAlive()); //**Pilot Sys enters
 
 					// then delete the ship:
 					if (ship_destroyed) {
@@ -2763,7 +2809,7 @@ SimRegion::DamageShips()
 						}
 
 						if (owner && owner->GetIFF() != ship->GetIFF()) {
-							if (ship->GetIFF() > 0 || owner->GetIFF() > 1 || !ship->GetPilot()->CheckAlive()) {		//**Pilot kill gets points too
+							if (ship->GetIFF() > 0 || owner->GetIFF() > 1 || ship->GetPilot() && !ship->GetPilot()->CheckAlive()) {		//**Pilot kill gets points too
 								killer->AddPoints(ship->Value());
 
 								Element* elem = owner->GetElement();
@@ -2800,6 +2846,9 @@ SimRegion::DamageShips()
 								killee->AddEvent(SimEvent::DESTROYED, owner_name);
 								ship->DeathSpiral(overkill);
 							}
+							//else if(ship->HullStrength() < 20 ) {
+							//	killee->AddEvent(SimEvent::DISABLED, owner_name);
+							//}
 							else if(!ship->GetPilot()->CheckAlive()) {
 								killee->AddEvent(SimEvent::PILOT_KILLED, owner_name);		//**new case for pilot dead. Call to Pilot() for disabling the ship
 		
@@ -3306,6 +3355,7 @@ SimRegion::DestroyShip(Ship* ship)
 	sim->ProcessEventTrigger(MissionEvent::TRIGGER_DESTROYED, 0, ship->Name());
 
 	dead_ships.insert(ship);
+
 	ship->Destroy();
 }
 
@@ -3555,6 +3605,26 @@ SimRegion::InsertObject(Asteroid* a)
 		
 		if (active)
 		a->Activate(sim->scene);
+	}
+}
+
+void
+SimRegion::InsertObject(ShipGraveyard* s)
+{
+	if(!s) return;
+
+	SimRegion* orig = s->GetRegion();
+
+	if(orig !=this) {
+		if (orig != 0)
+			orig->graves.remove(s);
+
+		graves.append(s);
+		TranslateObject(s);
+		s->SetRegion(this);
+
+		if(active)
+			s->Activate(sim->scene);
 	}
 }
 

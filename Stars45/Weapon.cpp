@@ -299,6 +299,11 @@ Weapon::ExecFrame(double seconds)
 	if (!ship)
 	return;
 
+	if(ship->IsCold()) {
+		ZeroAim();
+		return;
+	}
+
 	if (orders == POINT_DEFENSE && enabled)
 	SelectTarget();
 

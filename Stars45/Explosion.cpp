@@ -71,6 +71,7 @@ SimRegion* rgn, SimObject* src)
 	rep      = 0;
 	light    = 0;
 	life     = 0;
+	still	 = false;
 
 	if (type == QUANTUM_FLASH) {
 		life = 1.1;

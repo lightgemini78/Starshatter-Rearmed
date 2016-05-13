@@ -569,7 +569,7 @@ TacticalAI::CanTarget(Ship* tgt)
 
 	if (tgt && !tgt->InTransition()) {
 
-		if (tgt->GetPilot() && tgt->IsCold() || !tgt->IsTargeteable()) 		//**dont target poor pilots
+		if (tgt->IsCold() || !tgt->IsTargeteable()) 		//**dont target poor pilots
 			return result;
 	
 		if (tgt->IsRogue() || tgt->GetIFF() != ship->GetIFF())

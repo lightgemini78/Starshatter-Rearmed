@@ -57,6 +57,7 @@ public:
 	virtual void      ClearRumor();
 	virtual void      ClearTactical();
 	virtual void	  FindGroupFormation();	//**Battlegroup formations
+	virtual void	  UpdateWslots();
 
 	virtual Farcaster* GetFarcaster() { return farcaster; }
 
@@ -71,6 +72,7 @@ public:
 	virtual void      SetIdentify(bool identify);
 
 	virtual void      SetFormationDelta(const Point& point);
+	virtual void	  FormationDeltaOffset();
 
 	virtual bool         Update(SimObject* obj);
 	virtual const char*  GetObserverName() const;
@@ -132,6 +134,7 @@ protected:
 
 	Point             formation_delta;
 	double            slot_dist;
+	Point			  offset;
 
 	double            throttle;
 	double            old_throttle;

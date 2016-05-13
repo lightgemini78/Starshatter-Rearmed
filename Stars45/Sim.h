@@ -58,6 +58,7 @@ class MissionElement;
 class MissionEvent;
 class Hangar;
 class FlightDeck;
+class ShipGraveyard;
 
 class Terrain;
 class TerrainPatch;
@@ -103,6 +104,7 @@ public:
 	Ship*                FindShip(const char* name, const char* rgn_name=0);
 	Shot*                CreateShot(const Point& pos, const Camera& shot_cam, WeaponDesign* d, const Ship* ship=0, SimRegion* rgn=0);
 	Explosion*           CreateExplosion(const Point& pos, const Point& vel, int type, float exp_scale, float part_scale, SimRegion* rgn=0, SimObject* source=0, System* sys=0);
+	ShipGraveyard*	     CreateGraveyard(Ship* ship,bool flydust, SimRegion* rgn=0);	//Ship tomb
 	Debris*              CreateDebris(const Point& pos, const Point& vel, Model* model, double mass, SimRegion* rgn=0);
 	Asteroid*            CreateAsteroid(const Point& pos, int type, double mass, SimRegion* rgn=0);
 	void                 CreateSplashDamage(Ship* ship);
@@ -190,6 +192,7 @@ protected:
 	Scene                scene;
 	Dust*                dust;
 	CameraDirector*      cam_dir;
+	ShipGraveyard*		 grave;
 
 	List<SimRegion>      regions;
 	List<SimRegion>      rgn_queue;
@@ -247,11 +250,12 @@ public:
 	virtual Ship*        FindShipByObjID(DWORD objid);
 	virtual Shot*        FindShotByObjID(DWORD objid);
 
-	virtual void         InsertObject(Ship*      ship);
-	virtual void         InsertObject(Shot*      shot);
-	virtual void         InsertObject(Explosion* explosion);
-	virtual void         InsertObject(Debris*    debris);
-	virtual void         InsertObject(Asteroid*  asteroid);
+	virtual void         InsertObject(Ship*			 ship);
+	virtual void         InsertObject(Shot*			 shot);
+	virtual void         InsertObject(Explosion*	 explosion);
+	virtual void         InsertObject(Debris*		 debris);
+	virtual void         InsertObject(Asteroid*		 asteroid);
+	virtual void		 InsertObject(ShipGraveyard* grave);
 
 	const char*          Name() const { return name;            }
 	int                  Type() const { return type;            }
@@ -321,6 +325,7 @@ protected:
 	List<Asteroid>       asteroids;
 	List<Contact>        track_database[5];
 	List<SimRegion>      links;
+	List<ShipGraveyard>  graves;
 
 	DWORD                sim_time;
 	int                  ai_index;

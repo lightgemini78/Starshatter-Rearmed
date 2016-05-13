@@ -224,7 +224,7 @@ Thruster::ExecFrame(double seconds)
 
 		if (flcs) {
 			if (!flcs->IsPowerOn() || flcs->Status() < DEGRADED) {
-				agility   = 0.3;
+				agility   = 0.0; //0.3;								 Test total loss of control when Flcs is toasted
 				stability = 0.0;
 			}
 		}

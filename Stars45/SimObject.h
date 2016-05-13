@@ -42,7 +42,8 @@ public:
 		SIM_DRONE,
 		SIM_EXPLOSION,
 		SIM_DEBRIS,
-		SIM_ASTEROID
+		SIM_ASTEROID,
+		SIM_GRAVEYARD
 	};
 
 	SimObject()                        :                region(0), objid(0), active(0), notifying(0) { }

@@ -630,6 +630,9 @@
     <ClCompile Include="CanopyRep.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShipGraveyard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Stars.rc">
@@ -1130,6 +1133,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CanopyRep.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShipGraveyard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

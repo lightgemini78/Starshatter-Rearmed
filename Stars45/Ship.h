@@ -66,6 +66,8 @@ class Pilot;
 class PilotRep;
 class CanopyRep;
 class Model;
+class ShipGraveyard;
+
 
 // +--------------------------------------------------------------------+
 
@@ -485,6 +487,7 @@ protected:
 	DetailSet         detail;
 	int               detail_level;
 	Sim*              sim;
+	ShipGraveyard*    grave;
 	double            vlimit;
 	double            agility;
 	double            throttle;

@@ -104,6 +104,8 @@ public:
 	int               Action()          const { return action;     }
 	int               Status()          const { return status;     }
 	int               Formation()       const { return formation;  }
+	int				  Offset()		    const { return offsets;	   }	//** offsets
+	Point	          OffsetPos()	    const { return offset_pos; }
 	int               Speed()           const { return speed;      }
 	int               EMCON()           const { return emcon;      }
 	int               WeaponsFree()     const { return wep_free;   }
@@ -125,7 +127,9 @@ public:
 	void              SetAction(int s)              { action    = s;  }
 	void              SetStatus(int s);
 	void              SetFormation(int s)           { formation = s;  }
-	void              SetSpeed(int s)               { speed     = s;  }
+	void			  SetOffset(int o)				{ offsets	= o;  }		//**offsets
+	void			  SetOffsetPos(Point p)		    { offset_pos = p; }
+	void              SetSpeed(int s)               { speed     = s;  }	
 	void              SetEMCON(int e)               { emcon     = e;  }
 	void              SetWeaponsFree(int f)         { wep_free  = f;  }
 	void              SetPriority(int p)            { priority  = p;  }
@@ -146,6 +150,8 @@ protected:
 	RLoc              rloc;
 	int               action;
 	int               formation;
+	int				  offsets;		//** Battle group formation offsets
+	Point			  offset_pos;
 	int               status;
 	int               speed;
 

@@ -23,6 +23,7 @@
 #include "Explosion.h"
 #include "Debris.h"
 #include "HUDSounds.h"
+#include "ShipGraveyard.h"
 
 #include "Solid.h"
 #include "Random.h"
@@ -31,6 +32,7 @@
 
 ShipKiller::ShipKiller(Ship* s)
 : ship(s), DEATH_CAM_LINGER(5.0f), time(0.0f), exp_time(0.0f), exp_index(0)
+
 {
 }
 
@@ -266,6 +268,9 @@ ShipKiller::ExecFrame(double seconds)
 		if (ship == sim->GetPlayerShip())
 		HUDSounds::StopSound(HUDSounds::SND_RED_ALERT);
 
+		ShipGraveyard* grave = sim->CreateGraveyard(ship,true, ship->GetRegion());
+		grave->Setlife(900);
+		grave->CreateCloud();
 		sim->CreateSplashDamage(ship);
 		ship->Destroy(); // CAREFUL!!!  This will also delete this object!
 	}

@@ -63,7 +63,7 @@ TacticalView* TacticalView::tac_view = 0;
 TacticalView::TacticalView(Window* c, GameScreen* parent)
 : View(c), gamescreen(parent), ship(0), camview(0), projector(0),
 mouse_down(0), right_down(0), shift_down(0),
-show_move(0), show_action(0), active_menu(0), menu_view(0),
+show_move(0), show_action(0), show_position(0), active_menu(0), menu_view(0),
 msg_ship(0), base_alt(0), move_alt(0)
 {
 	tac_view = this;
@@ -202,7 +202,7 @@ TacticalView::Refresh()
 
 	DrawMenu();
 
-	if (show_move) {
+	if (show_move || show_position) {
 		Mouse::Show(false);
 		DrawMove();
 	}
@@ -632,7 +632,7 @@ TacticalView::DoMouseFrame()
 				}
 
 				// don't draw seln rectangle while zooming:
-				if (Mouse::RButton() || show_move || show_action) {
+				if (Mouse::RButton() || show_move || show_action || show_position) {
 					mouse_rect.w = 0;
 					mouse_rect.h = 0;
 				}
@@ -657,6 +657,11 @@ TacticalView::DoMouseFrame()
 				else if (show_move) {
 					SendMove();
 					show_move = false;
+					Mouse::Show(true);
+				}
+				else if (show_position) {
+					SendFormPosition();
+					show_position = false;
 					Mouse::Show(true);
 				}
 				else if (show_action) {
@@ -946,6 +951,15 @@ enum	GROUP_FORMATION {
 	GROUP_TRAIL
 };
 
+enum	OFFSETS {
+	FRONT = 2301,	BACK,
+	LEFT,			RIGHT,
+	UP,				DOWN,
+	RESET,			
+	POSITION,	//** Single unit position move
+	SHIFT		//** Whole group position shift
+};
+
 const int QUANTUM = 2000;
 const int FARCAST = 2001;
 
@@ -981,15 +995,26 @@ TacticalView::Initialize()
 	formation_menu->AddItem(Game::GetText("TacView.item.box"),       RadioMessage::GO_BOX);
 	formation_menu->AddItem(Game::GetText("TacView.item.trail"),     RadioMessage::GO_TRAIL);
 
-	form_menu = new(__FILE__,__LINE__) Menu("Formation");
+	form_menu = new(__FILE__,__LINE__) Menu("Formation");		//**Battlegroup menus
 	form_menu->AddItem("Diamond" , GROUP_DIAMOND);
 	form_menu->AddItem("Wall" ,	   GROUP_WALL);
 	form_menu->AddItem("Trail" ,   GROUP_TRAIL);
 
-	squad_menu = new(__FILE__,__LINE__) Menu("Battle Group");		//**Battlegroup menus
+	offset_menu = new(__FILE__,__LINE__) Menu("Offset");
+	offset_menu->AddItem("POSITION",POSITION);
+	offset_menu->AddItem("Front" ,	FRONT);
+	offset_menu->AddItem("Back" ,	BACK);
+	offset_menu->AddItem("Left" ,	LEFT);
+	offset_menu->AddItem("Right" ,	RIGHT);
+	offset_menu->AddItem("Up" ,		UP);
+	offset_menu->AddItem("Down" ,	DOWN);
+	offset_menu->AddItem("RESET" ,  RESET);
+
+	squad_menu = new(__FILE__,__LINE__) Menu("Battle Group");		
 	squad_menu->AddItem("Form up", RadioMessage::FORM_UP);
 	squad_menu->AddItem("Leave" ,  RadioMessage::RESUME_MISSION);
 	squad_menu->AddMenu("Formation" , form_menu);
+	squad_menu->AddMenu("Offsets" , offset_menu);
 
 	silent_menu = new(__FILE__,__LINE__) Menu("Run Silent");
 	silent_menu->AddItem("Emcon1", EMCON1);
@@ -1000,6 +1025,7 @@ TacticalView::Initialize()
 	command_menu->AddItem("Assemble", ASSEMBLE);
 	command_menu->AddItem("Dismiss"	, DISMISS);
 	command_menu->AddMenu("Formation" , form_menu);
+	command_menu->AddMenu("Offsets" ,	offset_menu);
 	command_menu->AddMenu("Run Silent" , silent_menu);
 
 	sensors_menu = new(__FILE__,__LINE__) Menu(Game::GetText("TacView.menu.emcon"));
@@ -1050,6 +1076,7 @@ TacticalView::Close()
 	delete command_menu;
 	delete silent_menu;
 	delete form_menu;
+	delete offset_menu;
 }
 
 // +--------------------------------------------------------------------+
@@ -1066,6 +1093,34 @@ TacticalView::ProcessMenuItem(int action)
 		move_alt  = 0;
 
 		if (msg_ship) base_alt = msg_ship->Location().y;
+		break;
+
+	case POSITION:
+		show_position = true;
+		base_alt	= 0;
+		move_alt	= 0;
+
+		if (msg_ship) base_alt = msg_ship->Location().y;
+		if (ship)	  base_alt = ship->Location().y;		
+		break;
+
+			if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard && guard->GetLeader() != ship)
+					continue;
+				if(guard && !guard->IsCold() && !guard->IsDying()) {
+					guard->GetRadioOrders()->SetOffset(action);
+				}
+			}
+			ListIter<Ship> fiter = ship->wfslot();
+			while (++fiter) {
+				Ship* fguard = fiter.value();
+				if(fguard && !fguard->IsCold() && fguard->GetPilot()->Alive())
+					fguard->GetRadioOrders()->SetOffset(action);
+			}
+		}
 		break;
 
 	case RadioMessage::ATTACK:
@@ -1214,20 +1269,54 @@ TacticalView::ProcessMenuItem(int action)
 			ListIter<Ship> iter = ship->wslot();
 			while (++iter) {
 				Ship* guard = iter.value();
-				if(guard && guard->GetLeader() != ship)
+				if(guard && guard->GetLeader() != guard)
 					continue;
-				if(guard && !guard->IsCold() || !guard->IsDying()) {
+				if(!guard->IsCold() || !guard->IsDying()) {
 					guard->GetRadioOrders()->SetFormation(action);
 				}
 			}
 			ListIter<Ship> fiter = ship->wfslot();
 			while (++fiter) {
 				Ship* fguard = fiter.value();
-				if(fguard && !fguard->IsCold() && fguard->GetPilot()->Alive())
+				Pilot* p = fguard->GetPilot();
+				if(fguard && !fguard->IsCold() && p && p->Alive())
 					fguard->GetRadioOrders()->SetFormation(action);
 			}
 		}
 		break;
+
+	case FRONT:
+	case BACK:
+	case LEFT:
+	case RIGHT:
+	case UP:
+	case DOWN:
+	case RESET:
+		action -= 2300;
+		if(msg_ship) {
+			msg_ship->GetRadioOrders()->SetOffset(action);
+		break;
+		}
+		
+		if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard && guard->GetLeader() != guard)
+					continue;
+				if(!guard->IsCold() || !guard->IsDying()) {
+					guard->GetRadioOrders()->SetOffset(action);
+				}
+			}
+			ListIter<Ship> fiter = ship->wfslot();
+			while (++fiter) {
+				Ship* fguard = fiter.value();
+				if(fguard && !fguard->IsCold())
+					fguard->GetRadioOrders()->SetOffset(action);
+			}
+		}
+		break;
+			
 
 	case VIEW_FORWARD:   stars->PlayerCam(CameraDirector::MODE_COCKPIT); break;
 	case VIEW_CHASE:     stars->PlayerCam(CameraDirector::MODE_CHASE);   break;
@@ -1489,9 +1578,15 @@ TacticalView::GetMouseLoc3D()
 void
 TacticalView::DrawMove()
 {
-	if (!projector || !show_move || !msg_ship) return;
+	if (!projector || !msg_ship && !ship) return;
+	if (!show_move && !show_position) return;
+	Point origin;
 
-	Point origin = msg_ship->Location();
+	if(msg_ship)
+	origin = msg_ship->Location();
+
+	else if (ship)
+	origin = ship->Location();
 
 	if (GetMouseLoc3D()) {
 		Point dest = move_loc;
@@ -1556,6 +1651,45 @@ TacticalView::SendMove()
 		RadioTraffic::Transmit(msg);
 		HUDSounds::PlaySound(HUDSounds::SND_TAC_ACCEPT);
 	}
+}
+
+void
+TacticalView::SendFormPosition()
+{
+	if (!projector || !show_position) return;
+
+	if (GetMouseLoc3D()) {
+		Point dest = move_loc;
+		dest.y += move_alt;
+
+		if (msg_ship) {	
+		msg_ship->GetRadioOrders()->SetOffset(POSITION-2300);
+		msg_ship->GetRadioOrders()->SetOffsetPos(dest);
+		}
+
+		else if(ship) {
+			ListIter<Ship> iter = ship->wslot();
+			while (++iter) {
+				Ship* guard = iter.value();
+				if(guard && guard->GetLeader() != guard)
+					continue;
+				if(guard && !guard->IsCold() && !guard->IsDying()) {
+					guard->GetRadioOrders()->SetOffset(SHIFT-2300);
+					guard->GetRadioOrders()->SetOffsetPos(dest);
+				}
+			}
+			ListIter<Ship> fiter = ship->wfslot();
+			while (++fiter) {
+				Ship* fguard = fiter.value();
+				if(fguard && !fguard->IsCold() && fguard->GetPilot()->Alive())
+					fguard->GetRadioOrders()->SetOffset(SHIFT-2300);
+					fguard->GetRadioOrders()->SetOffsetPos(dest);
+			}
+		}
+
+		HUDSounds::PlaySound(HUDSounds::SND_TAC_ACCEPT);
+	}
+
 }
 
 // +--------------------------------------------------------------------+

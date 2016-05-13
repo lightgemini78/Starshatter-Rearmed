@@ -185,7 +185,7 @@ StarshipTacticalAI::FindThreat()
 
 		else if(range < 500e3 && !formed && threat_ship->Class() >= Ship::DESTROYER) {
 			BattleGroupForm(true);
-			} 
+			} 		
 	}
 
 	else if(!formed) 

@@ -29,7 +29,7 @@ SimObserver::~SimObserver()
 }
 
 void
-SimObserver::Observe(SimObject* obj)
+SimObserver::Observe(SimObject* obj)		//Adds object to observe list
 {
 	if (obj) {
 		obj->Register(this);
@@ -40,7 +40,7 @@ SimObserver::Observe(SimObject* obj)
 }
 
 void
-SimObserver::Ignore(SimObject* obj)
+SimObserver::Ignore(SimObject* obj)		//Removes object from observe list AND unregisters
 {
 	if (obj) {
 		obj->Unregister(this);
@@ -49,7 +49,7 @@ SimObserver::Ignore(SimObject* obj)
 }
 
 bool
-SimObserver::Update(SimObject* obj)
+SimObserver::Update(SimObject* obj)		//Removes object from observe list
 {
 	if (obj)
 	observe_list.remove(obj);

@@ -69,6 +69,7 @@
 #include "PilotRep.h"
 #include "CanopyRep.h"
 #include "SimObject.h"
+#include "ShipGraveyard.h"
 
 #include "NetGame.h"
 #include "NetUtil.h"
@@ -722,7 +723,7 @@ Ship::SetupAgility()
 	dy_drg = design->yaw_drag;
 
 	if (IsDying() || pilot && !GetPilot()->Alive()) {		//**include Pilot killed and breaking up
-		drag   =  0.0f;
+		drag   =  0.05f;
 		dr_drg *= 0.25f;
 		dp_drg *= 0.25f;
 		dy_drg *= 0.25f;
@@ -788,7 +789,7 @@ Ship::SetupAgility()
 
 		if (flight_model == 0) {
 			if(IsCold())					//** disabled ships do slow down to a halt. 
-				drag = 0.005f;
+				drag = 0.1f;
 			else drag = 0.0f;
 		}
 	}
@@ -1586,8 +1587,9 @@ Ship::HitBy(Shot* shot, Point& impact)
 					if ((hit_type & HIT_SHIELD) != 0) 
 					flash = Explosion::SHIELD_FLASH;
 
-					sim->CreateExplosion(impact, Velocity(), flash,                   0.3f * scale, scale, region);
-					sim->CreateExplosion(impact, Point(),    Explosion::SHOT_BLAST,   2.0f,         scale, region);
+					//sim->CreateExplosion(impact, Velocity(), flash,                   0.3f * scale, scale, region);
+					sim->CreateExplosion(impact, Point(), Explosion::SHOT_BLAST, 2.0f, scale, region);
+					sim->CreateExplosion(impact, Point(), 27, scale * 0.1f, scale, region);	//smoke
 				}
 			}
 		}
@@ -1610,7 +1612,7 @@ Ship::HitBy(Shot* shot, Point& impact)
 						if (shot->Damage() > 0) {
 							if (shieldRep)
 							shieldRep->Hit(impact, shot, shot->Damage()*dscale);
-							sim->CreateExplosion(impact, Velocity(), Explosion::SHIELD_FLASH, 0.20f * scale, scale, region);
+							sim->CreateExplosion(impact, Point(), Explosion::SHIELD_FLASH, 0.20f * scale, scale, region);
 							sim->CreateExplosion(impact, Point(),    Explosion::SHOT_BLAST,   20.0f * scale, scale, region);
 						}
 
@@ -1620,8 +1622,9 @@ Ship::HitBy(Shot* shot, Point& impact)
 						hull_impact = impact = shot_loc;
 
 						if (shot->Damage() > 0) {
-							sim->CreateExplosion(impact, Velocity(), Explosion::HULL_FLASH,   0.30f * scale, scale, region);
+							//sim->CreateExplosion(impact, Point(), Explosion::HULL_FLASH,   0.30f * scale, scale, region);
 							sim->CreateExplosion(impact, Point(),    Explosion::SHOT_BLAST,   20.0f * scale, scale, region);
+							sim->CreateExplosion(impact, Point(),	 27,					    scale * 0.1f, scale, region);	//smoke
 						}
 
 						hit_type = HIT_HULL;
@@ -1646,10 +1649,12 @@ Ship::HitBy(Shot* shot, Point& impact)
 			}
 
 			else {
-				if (shot->IsBeam())
-				sim->CreateExplosion(impact, Velocity(), Explosion::BEAM_FLASH, 0.30f * scale, scale, region);
-				else
-				sim->CreateExplosion(impact, Velocity(), Explosion::HULL_FLASH, 0.30f * scale, scale, region);
+				if (shot->IsBeam()) {
+				sim->CreateExplosion(impact, Point(), Explosion::BEAM_FLASH, 0.30f * scale, scale, region);
+				sim->CreateExplosion(hull_impact, Point(), Explosion::LARGE_BURST, scale * 0.5f, scale, region, this);
+				}
+				else {
+				//sim->CreateExplosion(impact, Point(), Explosion::HULL_FLASH, 0.30f * scale, scale, region);
 
 				if (IsStarship()) {
 					Point burst_vel = hull_impact - Location();
@@ -1657,7 +1662,21 @@ Ship::HitBy(Shot* shot, Point& impact)
 					burst_vel *= Radius() * 0.5;
 					burst_vel += Velocity();
 
-					sim->CreateExplosion(hull_impact, burst_vel, Explosion::HULL_BURST, 0.50f * scale, scale, region, this);
+					if (shot->Damage() < 600)		//low damage shots use smaller hit fx
+					sim->CreateExplosion(hull_impact, burst_vel, Explosion::HULL_BURST, 0.20f * scale, scale, region, this);
+
+					else {
+					sim->CreateExplosion(hull_impact, Point(), Explosion::SHOT_BLAST, scale * 0.3f, scale * 0.2f, region, this);
+					sim->CreateExplosion(hull_impact, Point(), 27, scale * 0.1f, scale, region, this);
+					if (this->HullStrength() < 50) {
+						ShipGraveyard* rip = sim->CreateGraveyard(this,false, region);
+						rip->CreateDebris(hull_impact, this, 6);
+						} 
+					}
+
+				  }
+				else	sim->CreateExplosion(hull_impact, Point(), Explosion::HULL_FLASH, scale * 0.1f, scale * 0.1f, region, this);
+
 				}
 			}
 		}
@@ -2467,8 +2486,31 @@ Ship::ExecFrame(double seconds)
 	if(GetPilot() && !GetPilot()->Ejected() && HullStrength() < 10) {		//** maybe cool to place eject here??
 			GetPilot()->Eject();
 			return;
-		}	
+		}
+/*	if(!IsCold() && HullStrength() < 20) {	//Test universal Cold status for wasted ships
+		SetCold(true);
+		DropTarget();
+		SetIFF(0);
+		SetControls(0);
+		SetThrottle(0);
 
+		ListIter<System> iter = Systems();
+		while (++iter) {		
+			iter->PowerOff();
+			iter->SetPowerLevel(0);		
+		}
+		SetupAgility();
+
+		float scale = design->explosion_scale;
+		if (scale <=0)
+			scale = design->scale;
+
+		sim->CreateGraveyard(this, this->GetRegion());	// Tomb, debries+flyby dust
+
+		if (this->Class() > LCA)
+		sim->CreateExplosion(Location(), Point(), 28, scale * 0.4f, scale, region, this);	//smoke 15min
+	}
+	*/
 	// observers do not run out of power:
 	if (IsNetObserver()) {
 		for (int i = 0; i < reactors.size(); i++)
@@ -3800,26 +3842,6 @@ Ship::DeathSpiral(bool instakill)
 		RadioTraffic::SendQuickMessage(this, RadioMessage::DISTRESS);
 	}
 
-	//**If ship has ward, remove ship from its list.
-	Ship* w		 = this->GetWard();
-	Element* cmd = this->GetElement()->GetCommander();
-
-	if(w) {
-		if(w->wslot().contains(this))
-			w->wslot().remove(this);
-		else if(w->wfslot().contains(this))
-			w->wfslot().remove(this);
-	}
-	else if(cmd) {
-		Ship* c = cmd->GetShip(1);
-		if(c) {
-			if(c->wslot().contains(this))
-				c->wslot().remove(this);
-			else if(c->wfslot().contains(this))
-				c->wfslot().remove(this);
-		}		
-	}
-
 	transition_type = TRANSITION_DEATH_SPIRAL;
 
 	killer->BeginDeathSpiral(instakill);
@@ -4728,7 +4750,7 @@ Ship::InflictDamage(double damage, Shot* shot, int hit_type, Point impact)
 	}
 
 	// shake by percentage of maximum damage
-	double newshake = 50 * damage/design->integrity;
+	double newshake = 5 * damage/design->integrity;	//50
 
 	if (shake < MAX_SHAKE)  shake += (float) newshake;
 	if (shake > MAX_SHAKE)  shake  = (float) MAX_SHAKE;
@@ -4840,6 +4862,7 @@ Ship::InflictSystemDamage(double damage, Shot* shot, Point impact)
 					scale = design->scale;
 
 					sim->CreateExplosion(system->MountLocation(), Velocity() * 0.7f, system->GetExplosionType(), 0.2f * scale, scale, region, this, system);
+			
 				}
 			}
 		}

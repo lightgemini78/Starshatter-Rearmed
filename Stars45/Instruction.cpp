@@ -25,13 +25,13 @@
 // +----------------------------------------------------------------------+
 
 Instruction::Instruction(int act, const char* tgt)
-: region(0), action(act), formation(0), tgt_name(tgt),
+: region(0), action(act), formation(0), offsets(0), tgt_name(tgt),
 status(PENDING), speed(0), target(0), emcon(0), wep_free(0),
 priority(PRIMARY), farcast(0), hold_time(0)
 { }
 
 Instruction::Instruction(const char* rgn, Point loc, int act)
-: region(0), action(act), formation(0),
+: region(0), action(act), formation(0), offsets(0),
 status(PENDING), speed(0), target(0), emcon(0), wep_free(0),
 priority(PRIMARY), farcast(0), hold_time(0)
 { 
@@ -41,7 +41,7 @@ priority(PRIMARY), farcast(0), hold_time(0)
 }
 
 Instruction::Instruction(SimRegion* rgn, Point loc, int act)
-: region(rgn), action(act), formation(0),
+: region(rgn), action(act), formation(0), offsets(0),
 status(PENDING), speed(0), target(0), emcon(0), wep_free(0),
 priority(PRIMARY), farcast(0), hold_time(0)
 { 

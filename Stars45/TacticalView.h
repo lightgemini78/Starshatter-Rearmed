@@ -79,6 +79,7 @@ protected:
 	virtual void      DrawMove();
 	virtual void      SendMove();
 	virtual bool      GetMouseLoc3D();
+	virtual void	  SendFormPosition();
 
 	virtual void      DrawAction();
 	virtual void      SendAction();
@@ -95,6 +96,7 @@ protected:
 	int         right_down;
 	int         show_move;
 	int         show_action;
+	int			show_position;
 
 	Point       move_loc;
 	double      base_alt;

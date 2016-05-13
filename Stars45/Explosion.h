@@ -69,6 +69,8 @@ public:
 	virtual bool         Update(SimObject* obj);
 	virtual const char*  GetObserverName() const;
 
+	virtual void		SetStill(bool s)	{ still = s; }
+
 protected:
 	int               type;
 	Particles*        particles; 
@@ -79,6 +81,8 @@ protected:
 
 	SimObject*        source;
 	Point             mount_rel;
+
+	bool			  still;
 };
 
 #endif Explosion_h

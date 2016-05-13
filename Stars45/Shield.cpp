@@ -176,7 +176,7 @@ Shield::DeflectDamage(Shot* shot, double damage)
 	double filter      = 1;
 	double penetration = 5;
 	double leak        = 0;
-	double stress	   = 10;              //**** stress damage
+	double stress	   = 5;              //**** stress damage
 	float  Sdamage	   = 0;         	//****shield damage
 
 	if (shot) {
@@ -202,19 +202,17 @@ Shield::DeflectDamage(Shot* shot, double damage)
 		}
 
 		else {																			  //*** Whole leak thingy disabled.
-
 			double deflected = Sdamage - (2 * pow(Sdamage,shield_factor));   //***** Shield damage takes control of damage to shields.
 
 			stress_level += deflected - (deflected * shield_factor);		//***** Shield stress handling and resolution.
-				if (stress_level > capacity * 4)  {								//***** More shield factor means slower stress build up.
+				if (stress_level > capacity * 2)  {								//***** More shield factor means slower stress build up.
 					ApplyDamage(stress * stress_level/(capacity*4) );			//***** shield overkill causes increased proportional damage to system.
 					stress_level = 1;
-				}
-			
+				}			
 			energy -= (float) (deflected * deflection_cost);
 		}
-
 	}
+
 	else {
 		leak = damage * (1 - pow(shield_level, shield_curve) * filter * availability);
 	}

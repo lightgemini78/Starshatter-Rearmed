@@ -35,6 +35,7 @@
 #include "QuantumDrive.h"
 #include "Debris.h"
 #include "Asteroid.h"
+#include "Pilot.h"
 
 #include "Game.h"
 #include "Random.h"
@@ -243,6 +244,8 @@ ShipAI::ExecFrame(double secs)
 	if (!ship) return;
 
 	ship->SetDirectorInfo(" ");
+
+	UpdateWslots();
 
 	// check to make sure current navpt is still valid:
 	if (navpt)
@@ -747,6 +750,50 @@ ShipAI::SetFormationDelta(const Point& point)
 }
 
 void
+ShipAI::FormationDeltaOffset()
+{
+	Ship* w = ship->GetWard();
+
+	Point p		= Point(0, 0, 0);
+	Point orig	= ship->Location();
+	Point lead  = Point(0,0,0);
+	if(w)
+	lead = w->Location();
+
+	Instruction* o = ship->GetRadioOrders();
+	Point loc = o->OffsetPos();
+	int drill = o->Offset();
+
+	switch (drill) {
+	case 1: p = Point(0,	0,  5e3); break;
+	case 2: p = Point(0,	0, -5e3); break;
+	case 3: p = Point(5e3,	0,	  0); break;
+	case 4: p = Point(-5e3, 0,	  0); break;
+	case 5: p = Point(0,  5e3,    0); break;
+	case 6: p = Point(0, -5e3,	  0); break;
+	case 7: offset = Point(0, 0, 0);  break;
+	case 8:		//** single location move	
+		p = loc - orig;
+		o->SetOffsetPos(Point(0,0,0));
+		break;
+
+	case 9:		//** group shift move		
+		if(w){	
+		p = loc - lead;
+		o->SetOffsetPos(Point(0,0,0));
+		}
+		break;
+		
+	default: p = Point(0, 0, 0); break;
+	}
+
+	if(drill != 7)
+	offset += p;
+
+	o->SetOffset(0);
+}
+
+void
 ShipAI::FindObjectiveFormation()
 {
 	const double prediction = 5;
@@ -755,6 +802,7 @@ ShipAI::FindObjectiveFormation()
 	Element* elem = ship->GetElement();
 	Ship*    lead = elem->GetShip(1);
 	Ship*    ward = ship->GetWard();
+	Instruction* orders = ship->GetRadioOrders();
 
 	if (!lead || lead == ship) {
 		lead = ward;
@@ -769,8 +817,9 @@ ShipAI::FindObjectiveFormation()
 
 	obj_w       = lead->Location() + lead->Velocity() * prediction;
 	Matrix m;   m.Rotate(0, 0, lead->CompassHeading() - PI);
-	Point  fd   = formation_delta;
-	if(lead->Class() < Ship::COURIER)
+	FormationDeltaOffset();
+	Point  fd   = formation_delta + offset;
+	if(lead->Class() < Ship::COURIER || orders->Formation() != Instruction::DIAMOND)
 		fd	= fd * m;
 		obj_w	+= fd;
 
@@ -1430,10 +1479,10 @@ ShipAI::FindGroupFormation()
 			if(format == Instruction::DIAMOND) {
 
 				switch (wardslot) {
-				case 0:  form = Point(  0,  1, -3); break;
+				case 0:  form = Point(  0,  2, -4); break;
 				case 1:  form = Point(  4,  0,  0); break;
 				case 2:  form = Point( -4,  0,  0); break;
-				case 3:  form = Point(  0,  0, 3.5); break;
+				case 3:  form = Point(  0, -2, 3.5); break;
 				default: form = Point(  0, wardslot, wardslot);
 				}
 			}
@@ -1443,8 +1492,8 @@ ShipAI::FindGroupFormation()
 				switch (wardslot) {
 				case 0:  form = Point(  5,  0,  0); break;
 				case 1:  form = Point( -5,  0,  0); break;
-				case 2:  form = Point(  0,  3,  0); break;
-				case 3:  form = Point(  0, -3,  0); break;
+				case 2:  form = Point(  0,  4,  0); break;
+				case 3:  form = Point(  0, -4,  0); break;
 				default: form = Point(  0, wardslot, wardslot);
 				}
 			}
@@ -1522,14 +1571,66 @@ ShipAI::FindGroupFormation()
 		}
 	}	
 		if (ship->IsStarship()) {
-		form *= 5e3;
-		}	
-	else {
-		form *= 3.5e3;
-	}
+			double area = def->Radius() * 4;
+			form *= area;
+		}
+		else {
+			form *= 3.5e3;
+		}
+
 	old_formation = format;
 
 	SetFormationDelta(form);
 }
+
+void
+ShipAI::UpdateWslots()
+{
+//	Ship* w		 = ship->GetWard();							
+//	Element* el = ship->GetElement();
+//	Element* cmd = el->GetCommander();
+
+	if (!ship->wslot().isEmpty()) {		//** if w list its not empty check ships
+		ListIter<Ship> iter = ship->wslot();
+		while (++iter) {
+			Ship* guard = iter.value();
+			if(!guard || guard->GetLeader() != guard)
+				continue;
+			if(guard->Integrity() < 1 || guard->IsCold() || guard->IsDying()) {
+				ship->wslot().remove(guard);
+			}
+		}
+	}
+
+	if (!ship->wfslot().isEmpty()) {
+		ListIter<Ship> fiter = ship->wfslot();
+		while (++fiter) {
+			Ship* fguard = fiter.value();
+			if(fguard) {
+				Pilot* p = fguard->GetPilot();
+				if(fguard->Integrity() < 1 || fguard->IsCold() || p && !p->Alive())
+				ship->wfslot().remove(fguard);
+			}
+		}
+	}
+
+/*	if(w) {
+		if(w->wslot().contains(ship) && ship->Integrity() < 1)
+			w->wslot().remove(ship);
+		else if(w->wfslot().contains(ship) && ship->Integrity() < 1)
+			w->wfslot().remove(ship);
+	}
+	else if(cmd) {
+		Ship* c = cmd->GetShip(1);
+		if(c) {
+			if(c->wslot().contains(ship) && ship->Integrity() < 1)
+				c->wslot().remove(ship);
+			else if(c->wfslot().contains(ship) && ship->Integrity() < 1)
+				c->wfslot().remove(ship);
+		}		
+	}	*/
+	
+}
+
 
 
