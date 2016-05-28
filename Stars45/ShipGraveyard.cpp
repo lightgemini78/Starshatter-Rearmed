@@ -14,6 +14,7 @@
 #include "ParseUtil.h"
 #include "Random.h"
 #include "Solid.h"
+#include <thread>
 
 static  Model*		debries[32];
 static	Sprite*		dust;
@@ -88,20 +89,19 @@ ShipGraveyard::ExecFrame(double seconds)
 	CameraDirector* camera = CameraDirector::GetInstance();
 	cam_loc = camera->GetCamera()->Pos();
 
+	life -= seconds;
+
 	if(Dship && Dship->IsCold())
 		loc = Dship->Location();
 
 	if (camera && camera->GetCamera() && puff) {
-		if (Point(cam_loc - loc).length() < 10e3 ) {	//8000				Target			Distance 1			Distance2
+		if (Point(cam_loc - loc).length() < 15e3 ) {	//15000				Target			Distance 1			Distance2
 			puff->ExecFrame(seconds);					//**				 Point<--------->Reset on/off<----->Execframe off
-
-			if(puff) {
-				if (Point(cam_loc - loc).length() < 4000 )	//4000					
-					puff->hidden = false;
-
-				else puff->hidden = true;	
-			}			
-		}
+			
+			if (Point(cam_loc - loc).length() < 4000 )	//4000
+				puff->hidden = false;
+			else puff->hidden = true;						
+		}		
 	} 
 }
 
@@ -145,7 +145,29 @@ ShipGraveyard::CreateCloud(void)
 void
 ShipGraveyard::CreateDebris(Point loc,Ship* ship, int secs)
 {
-	stuff =new(__FILE__,__LINE__) FlyDust(3, loc, ship, ship->GetRegion(), 220, 1, 1, secs);
+	//stuff =new(__FILE__,__LINE__) FlyDust(3, loc, ship, ship->GetRegion(), 220, 1, 1, secs);
+
+	int		np		= 1;
+	int		models	= 3;
+	double	RADIUS	= 220;
+	position = new(__FILE__,__LINE__) Point[np];
+
+	for(int i = 0; i < np; ++i) {
+		for(int m = 0; m < models; ++m) {
+		position[i]	 = Point(Random(-RADIUS,RADIUS) , 
+							 Random(-RADIUS,RADIUS) , 
+							 Random(-RADIUS,RADIUS) );
+
+		Point vel = (position[i]+loc) - loc;
+		vel.Normalize();
+		vel += position[i];
+
+		Debris* deb = sim->CreateDebris(position[i]+loc, vel*2 + ship->Velocity(), debries[m], 10, zone);
+		deb->SetDrag(0.08);
+		deb->SetLife(secs);
+		}
+	}
+
 }
 
 void
@@ -170,12 +192,12 @@ FlyDust::FlyDust(Bitmap* bmp, const Point& pos, double rad, float multi, int num
 
 	radius = 500.0f;
 
-	dust_loc	= new(__FILE__,__LINE__) Point[np];
+	obj_loc	= new(__FILE__,__LINE__) Point[np];
 	intensity	= new(__FILE__,__LINE__) double[np];
 	last_delta	= new(__FILE__,__LINE__) double[np];
 
 	for(int i = 0; i < np; ++i) {
-		dust_loc[i]		= Point(Random(-RADIUS,RADIUS) + cam_pos.x, 
+		obj_loc[i]		= Point(Random(-RADIUS,RADIUS) + cam_pos.x, 
 								Random(-RADIUS,RADIUS) + cam_pos.y, 
 								Random(-RADIUS,RADIUS) + cam_pos.z);
 		intensity[i]	= 0;
@@ -190,15 +212,15 @@ FlyDust::FlyDust(Bitmap* bmp, const Point& pos, double rad, float multi, int num
 //+-----------------------------------------------------------------------------------------------------+
 
 FlyDust::FlyDust(int models, const Point& pos, Ship* ship, SimRegion* zone, double rad, float multi, int number, int secs)		//3d model constructor
-: np(number), RADIUS(rad), multiplier(multi),object(true), hidden(false)
+: np(number), RADIUS(rad), multiplier(multi),object(true), hidden(false)								
 {
 	cam		= CameraDirector::GetInstance();
 	cam_pos = cam->GetCamera()->Pos();
 
 	MoveTo(pos);
 
-	obj_loc		= new(__FILE__,__LINE__) Point[np];
-	last_delta	= new(__FILE__,__LINE__) double[np];
+	obj_loc		= new(__FILE__,__LINE__) Point[np];							// This thing should really go directly into Shipgaveyard:create debris. Its pointless to use
+	last_delta	= new(__FILE__,__LINE__) double[np];						// flyDust to make this since vanilla debris class is who is handling the stuff.
 
 	for(int i = 0; i < np; ++i) {
 		for(int m = 0; m < models; ++m) {
@@ -210,8 +232,8 @@ FlyDust::FlyDust(int models, const Point& pos, Ship* ship, SimRegion* zone, doub
 		vel.Normalize();
 		vel += obj_loc[i];
 
-		Debris* deb = sim->CreateDebris(obj_loc[i]+pos, vel+ship->Velocity(), debries[m], 10, zone);
-		deb->SetDrag(0.05);
+		Debris* deb = sim->CreateDebris(obj_loc[i]+pos, vel*2 + ship->Velocity(), debries[m], 10, zone);
+		deb->SetDrag(0.08);
 		deb->SetLife(secs);
 		}
 	}
@@ -219,10 +241,9 @@ FlyDust::FlyDust(int models, const Point& pos, Ship* ship, SimRegion* zone, doub
 
 FlyDust::~FlyDust()
 {
-	delete	  dust;
-	delete [] dust_loc;
-	//delete [] obj_loc;
+	delete dust;
 	delete [] intensity;
+	delete [] obj_loc;		
 	delete [] last_delta;
 }
 
@@ -234,16 +255,11 @@ FlyDust::Reset(int i)
 		 vel = cam->GetShip()->Velocity();	
 
 	if(!object) {
-		dust_loc[i] = Point(Random(-RADIUS,RADIUS) + cam_pos.x + vel.x * multiplier, 
+		obj_loc[i] = Point(Random(-RADIUS,RADIUS) + cam_pos.x + vel.x * multiplier, 
 							Random(-RADIUS,RADIUS) + cam_pos.y + vel.y * multiplier, 
 							Random(-RADIUS,RADIUS) + cam_pos.z + vel.z * multiplier);
 		intensity[i]	= 0;
 	}
-/*	if(object) {
-		obj_loc[i] =  Point(Random(-RADIUS,RADIUS) + cam_pos.x + vel.x * multiplier, 
-							Random(-RADIUS,RADIUS) + cam_pos.y + vel.y * multiplier, 
-							Random(-RADIUS,RADIUS) + cam_pos.z + vel.z * multiplier);
-	} */
 }
 
 void
@@ -254,8 +270,15 @@ FlyDust::ExecFrame(double seconds)
 
 	for(int i=0; i < np; ++i) {
 		if(!object) {
-		double delta = Point(dust_loc[i] - cam_pos).length();
-		if(delta > RADIUS * multiplier && !hidden || intensity[i] == 0 && !hidden) 
+
+		if (hidden) {
+			intensity[i] -= seconds;
+			if (intensity[i] < 0) intensity[i] = 0;
+			continue;
+		}
+
+		double delta = Point(obj_loc[i] - cam_pos).length();
+		if(delta > RADIUS * multiplier || intensity[i] == 0) 
 			Reset(i);
 
 			if(last_delta[i] > delta) {
@@ -296,7 +319,7 @@ FlyDust::Render(Video* video, DWORD flags)
 			continue;
 
 		Point dloc;
-		dloc = dust_loc[i] - Location();
+		dloc = obj_loc[i] - Location();
 		
 		dust->MoveTo(dloc);
 		dust->SetShade(intensity[i]);

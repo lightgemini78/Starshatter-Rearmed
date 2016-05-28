@@ -582,7 +582,7 @@ CameraView::RenderSceneObjects(bool distant)
 	video->SetRenderState(Video::LIGHTING_ENABLE,   TRUE);
 
 	if (distant)
-	video->SetProjection((float) GetFieldOfView(), 5.0e6f, 1.0e12f, projection_type);
+	video->SetProjection((float) GetFieldOfView(), 5.0e6f, 1.0e12f, projection_type);   
 	else
 	video->SetProjection((float) GetFieldOfView(), 1.0f,   1.0e6f,  projection_type);
 
@@ -653,6 +653,7 @@ CameraView::RenderSceneObjects(bool distant)
 	iter.reset();
 	while (++iter) {
 		Graphic* g = iter.value();
+
 
 		if (distant && g->Depth() > 5e6 || !distant && g->Depth() < 5e6) {
 			Render(g, Graphic::RENDER_ALPHA);

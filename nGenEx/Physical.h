@@ -125,6 +125,7 @@ public:
 	virtual void      SetAbsoluteOrientation(double roll, double pitch, double yaw);
 	virtual void      CloneCam(const Camera& cam);
 	virtual void      SetDrag(double d) { drag = (float) d; }
+	virtual void	  SetLife(double s) { life = s; }
 
 	virtual void      SetPrimary(const Point& loc, double mass);
 	virtual void      SetGravity(double g);

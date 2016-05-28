@@ -24,6 +24,7 @@
 class Bitmap;
 
 class Sprite : public Graphic
+
 {
 public:
 	static const char* TYPENAME() { return "Sprite"; }

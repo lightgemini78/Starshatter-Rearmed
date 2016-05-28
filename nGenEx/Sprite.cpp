@@ -253,6 +253,7 @@ Sprite::Render(Video* video, DWORD flags)
 		Matrix         orient(camera->Orientation());
 		Vec3           nrm(camera->vpn() * -1);
 		ColorValue     white((float) shade, (float) shade, (float) shade, (float) shade);
+		ColorValue     whiten((float) shade/3, (float) shade/3, (float) shade/3, (float) shade/3);
 		DWORD          diff = white.ToColor().Value();
 
 		orient.Roll(angle);
@@ -296,9 +297,9 @@ Sprite::Render(Video* video, DWORD flags)
 			mtl.Ka            = white;
 			mtl.Kd            = white;
 			mtl.Ks            = Color::Black;
-			mtl.Ke            = Color::Black;
+			mtl.Ke            = whiten; //Color::Black;
 			mtl.tex_diffuse   = Frame();
-			mtl.tex_emissive  = 0;
+			mtl.tex_emissive  = Frame(); //0;
 			mtl.blend         = blend_mode;
 			mtl.luminous      = luminous;
 		}

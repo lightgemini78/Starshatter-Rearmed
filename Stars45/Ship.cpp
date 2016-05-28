@@ -1670,6 +1670,7 @@ Ship::HitBy(Shot* shot, Point& impact)
 					sim->CreateExplosion(hull_impact, Point(), 27, scale * 0.1f, scale, region, this);
 					if (this->HullStrength() < 50) {
 						ShipGraveyard* rip = sim->CreateGraveyard(this,false, region);
+						rip->SetLife(0.5);
 						rip->CreateDebris(hull_impact, this, 6);
 						} 
 					}

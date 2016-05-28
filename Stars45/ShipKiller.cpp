@@ -269,7 +269,7 @@ ShipKiller::ExecFrame(double seconds)
 		HUDSounds::StopSound(HUDSounds::SND_RED_ALERT);
 
 		ShipGraveyard* grave = sim->CreateGraveyard(ship,true, ship->GetRegion());
-		grave->Setlife(900);
+		grave->Setlife(140);
 		grave->CreateCloud();
 		sim->CreateSplashDamage(ship);
 		ship->Destroy(); // CAREFUL!!!  This will also delete this object!

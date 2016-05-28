@@ -57,7 +57,7 @@ blend(a), extra(0.0f), point_sprite(0), emitting(true)
 	float speed = base_speed;
 
 	for (int i = 0; i < nverts; i++) {
-		intensity[i]   = 1.0f;
+		intensity[i]   = 1;
 		timestamp[i]   = (float) (Game::GameTime() / 1000.0);
 		scale[i]       = (float) (min_scale);
 		angle[i]       = (float) (Random(0, 2*PI));
@@ -90,7 +90,7 @@ blend(a), extra(0.0f), point_sprite(0), emitting(true)
 	point_sprite = new(__FILE__,__LINE__) Sprite(bitmap, nframes);
 	point_sprite->Scale(s);
 	point_sprite->SetBlendMode(blend);
-	point_sprite->SetFrameRate(nframes * decay);
+	point_sprite->SetFrameRate(nframes * 25); // decay);	85 near instant
 }
 
 Particles::~Particles()
@@ -141,7 +141,7 @@ void Particles::ExecFrame(double seconds)
 		}
 
 		angle[i]      = (float) rho;
-		intensity[i] -= (float) (decay * seconds);
+		intensity[i] -= (float) (decay * seconds);		// 2.1 = 120 secs /  256 = 1 sec / 100 = 2.5 sec 
 
 		if (point_sprite->NumFrames() > 1) {
 			double age = Game::GameTime()/1000.0 - timestamp[i];

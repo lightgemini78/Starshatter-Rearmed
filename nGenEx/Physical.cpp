@@ -215,7 +215,7 @@ Physical::AeroFrame(double s)
 		double rho     = GetDensity();
 		double lift    = 0;
 
-		if (v > 150) {
+		if (v > 150) {					
 			v_2 = (v-150) * (v-150);
 
 			Point  vfp1 = vfp - cam.vrt() * (vfp * cam.vrt());
@@ -778,7 +778,7 @@ Physical::SemiElasticCollision_single(Physical& a)
 {
 	
 	Point avel = a.Velocity();
-	double d   = fabs(avel.y) ;
+	double d   = fabs(avel.y) * 1.02;
 	Point n = Point(0, d, 0);
 	a.velocity = avel + n;
 

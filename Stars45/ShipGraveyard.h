@@ -30,7 +30,7 @@ public:
     virtual~ShipGraveyard();
 
 	virtual void		ExecFrame(double seconds);
-			void		Setlife(int secs) { life = secs;}
+			void		Setlife(double secs) { life = secs;}
 
 	static void			Initialize();
 
@@ -54,6 +54,7 @@ protected:
 	SimRegion*  zone;
 
 	Point		cam_loc;
+	Point*		position;
 
 	int		exec_time;
 	bool	init;
@@ -77,7 +78,6 @@ public:
 protected:
 
 	Sprite* dust;
-	Point*	dust_loc;
 	Point*	obj_loc;
 	Point	cam_pos;
 	Point	origin;
